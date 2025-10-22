@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
-import type { FlowNode, ChainId, Token, CHAIN_NAMES } from '@/types/flow';
+import type { FlowNode } from '@/types/flow';
 import { CHAIN_NAMES as CHAINS } from '@/types/flow';
 
 interface NodeEditDialogProps {
@@ -63,41 +63,12 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave }: NodeEditDialog
                 <option value="USDT">USDT</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Amount
-              </label>
-              <input
-                type="number"
-                value={formData.amount || '100'}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                step="0.01"
-                min="0"
-              />
-            </div>
           </>
         );
 
       case 'bridge':
         return (
           <>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                From Chain
-              </label>
-              <select
-                value={formData.fromChain || 84532}
-                onChange={(e) => setFormData({ ...formData, fromChain: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                {Object.entries(CHAINS).map(([id, name]) => (
-                  <option key={id} value={id}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </div>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 To Chain
@@ -112,20 +83,6 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave }: NodeEditDialog
                     {name}
                   </option>
                 ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Token
-              </label>
-              <select
-                value={formData.token || 'USDC'}
-                onChange={(e) => setFormData({ ...formData, token: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="ETH">ETH</option>
-                <option value="USDC">USDC</option>
-                <option value="USDT">USDT</option>
               </select>
             </div>
             <div>
@@ -147,36 +104,6 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave }: NodeEditDialog
       case 'transfer':
         return (
           <>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Chain
-              </label>
-              <select
-                value={formData.chain || 84532}
-                onChange={(e) => setFormData({ ...formData, chain: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                {Object.entries(CHAINS).map(([id, name]) => (
-                  <option key={id} value={id}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Token
-              </label>
-              <select
-                value={formData.token || 'USDC'}
-                onChange={(e) => setFormData({ ...formData, token: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                <option value="ETH">ETH</option>
-                <option value="USDC">USDC</option>
-                <option value="USDT">USDT</option>
-              </select>
-            </div>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Amount
@@ -210,22 +137,6 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave }: NodeEditDialog
           <>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Chain
-              </label>
-              <select
-                value={formData.chain || 84532}
-                onChange={(e) => setFormData({ ...formData, chain: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-              >
-                {Object.entries(CHAINS).map(([id, name]) => (
-                  <option key={id} value={id}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Action
               </label>
               <select
@@ -240,20 +151,6 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave }: NodeEditDialog
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Token
-              </label>
-              <select
-                value={formData.token || 'USDC'}
-                onChange={(e) => setFormData({ ...formData, token: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-              >
-                <option value="ETH">ETH</option>
-                <option value="USDC">USDC</option>
-                <option value="USDT">USDT</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Amount
               </label>
               <input
@@ -263,67 +160,6 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave }: NodeEditDialog
                 className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                 step="0.01"
                 min="0"
-              />
-            </div>
-          </>
-        );
-
-      case 'end':
-        return (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Chain
-              </label>
-              <select
-                value={formData.chain || 84532}
-                onChange={(e) => setFormData({ ...formData, chain: Number(e.target.value) })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                {Object.entries(CHAINS).map(([id, name]) => (
-                  <option key={id} value={id}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Expected Token
-              </label>
-              <select
-                value={formData.expectedToken || 'USDC'}
-                onChange={(e) => setFormData({ ...formData, expectedToken: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="ETH">ETH</option>
-                <option value="USDC">USDC</option>
-                <option value="USDT">USDT</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Expected Amount
-              </label>
-              <input
-                type="number"
-                value={formData.expectedAmount || '100'}
-                onChange={(e) => setFormData({ ...formData, expectedAmount: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                step="0.01"
-                min="0"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Description
-              </label>
-              <input
-                type="text"
-                value={formData.description || ''}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="e.g., Earning yield"
               />
             </div>
           </>

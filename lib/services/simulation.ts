@@ -6,8 +6,16 @@ import type {
   BridgeNodeData,
   TransferNodeData,
   ExecuteNodeData,
+  StartNodeData,
+  Token,
+  ChainId,
 } from '@/types/flow';
 import type { NexusService } from './nexusSDK';
+
+interface FlowContext {
+  token: Token;
+  currentChain: ChainId;
+}
 
 export class SimulationService {
   private nexusService: NexusService | null = null;
@@ -24,21 +32,50 @@ export class SimulationService {
       throw new Error('Flow must have at least one node');
     }
 
+    // Find start node
+    const startNode = nodes.find((n) => n.type === 'start');
+    if (!startNode) {
+      throw new Error('Flow must have a start node');
+    }
+
+    // Check for at least one action node
+    const hasActionNode = nodes.some((n) =>
+      n.type === 'bridge' || n.type === 'transfer' || n.type === 'execute'
+    );
+    if (!hasActionNode) {
+      throw new Error('Flow must have at least one action node (bridge, transfer, or execute)');
+    }
+
+    const startData = startNode.data as StartNodeData;
+    const context: FlowContext = {
+      token: startData.token,
+      currentChain: startData.chain,
+    };
+
     const nodeResults: SimulationResult[] = [];
     let totalCost = 0;
     let totalTime = 0;
 
-    for (const node of nodes) {
-      if (node.type === 'start' || node.type === 'end') {
+    // Get execution order following the edges
+    const executionOrder = this.getExecutionOrder(nodes, edges);
+
+    for (const node of executionOrder) {
+      if (node.type === 'start') {
         continue;
       }
 
-      const result = await this.simulateNode(node);
+      const result = await this.simulateNode(node, context);
       nodeResults.push(result);
 
       if (result.success) {
         totalCost += parseFloat(result.estimatedCost);
         totalTime += result.estimatedTime;
+      }
+
+      // Update context after bridge node
+      if (node.type === 'bridge') {
+        const bridgeData = node.data as BridgeNodeData;
+        context.currentChain = bridgeData.toChain;
       }
     }
 
@@ -52,15 +89,47 @@ export class SimulationService {
     };
   }
 
-  private async simulateNode(node: FlowNode): Promise<SimulationResult> {
+  private getExecutionOrder(
+    nodes: FlowNode[],
+    edges: FlowEdge[]
+  ): FlowNode[] {
+    const result: FlowNode[] = [];
+    const visited = new Set<string>();
+
+    const startNode = nodes.find((n) => n.type === 'start');
+    if (!startNode) {
+      return nodes;
+    }
+
+    const visit = (nodeId: string) => {
+      if (visited.has(nodeId)) return;
+
+      const node = nodes.find((n) => n.id === nodeId);
+      if (!node) return;
+
+      visited.add(nodeId);
+      result.push(node);
+
+      const outgoing = edges.filter((e) => e.source === nodeId);
+      for (const edge of outgoing) {
+        visit(edge.target);
+      }
+    };
+
+    visit(startNode.id);
+
+    return result;
+  }
+
+  private async simulateNode(node: FlowNode, context: FlowContext): Promise<SimulationResult> {
     try {
       switch (node.type) {
         case 'bridge':
-          return await this.simulateBridge(node);
+          return await this.simulateBridge(node, context);
         case 'transfer':
-          return await this.simulateTransfer(node);
+          return await this.simulateTransfer(node, context);
         case 'execute':
-          return await this.simulateExecute(node);
+          return await this.simulateExecute(node, context);
         default:
           return {
             nodeId: node.id,
@@ -81,15 +150,17 @@ export class SimulationService {
     }
   }
 
-  private async simulateBridge(node: FlowNode): Promise<SimulationResult> {
+  private async simulateBridge(node: FlowNode, context: FlowContext): Promise<SimulationResult> {
     const data = node.data as BridgeNodeData;
+    const fromChain = context.currentChain;
+    const token = context.token;
 
     if (this.nexusService && this.nexusService.isInitialized()) {
       try {
         console.log('[SimulationService] Using real Nexus SDK for bridge simulation');
 
         const simulation = await this.nexusService.simulateBridge({
-          token: data.token,
+          token: token,
           amount: data.amount,
           toChainId: data.toChain,
         });
@@ -107,7 +178,7 @@ export class SimulationService {
           success: true,
           estimatedCost,
           estimatedTime,
-          route: [`${data.fromChain}`, 'Avail Nexus', `${data.toChain}`],
+          route: [`${fromChain}`, 'Avail Nexus', `${data.toChain}`],
         };
       } catch (error) {
         console.error('[SimulationService] Real SDK simulation failed:', error);
@@ -125,21 +196,23 @@ export class SimulationService {
       success: true,
       estimatedCost,
       estimatedTime,
-      route: [`${data.fromChain}`, 'Avail Nexus', `${data.toChain}`],
+      route: [`${fromChain}`, 'Avail Nexus', `${data.toChain}`],
     };
   }
 
-  private async simulateTransfer(node: FlowNode): Promise<SimulationResult> {
+  private async simulateTransfer(node: FlowNode, context: FlowContext): Promise<SimulationResult> {
     const data = node.data as TransferNodeData;
+    const currentChain = context.currentChain;
+    const token = context.token;
 
     if (this.nexusService && this.nexusService.isInitialized()) {
       try {
         console.log('[SimulationService] Using real Nexus SDK for transfer simulation');
 
         const simulation = await this.nexusService.simulateTransfer({
-          token: data.token,
+          token: token,
           amount: data.amount,
-          toChainId: data.chain,
+          toChainId: currentChain,
           recipient: data.recipient,
         });
 
@@ -156,7 +229,7 @@ export class SimulationService {
           success: true,
           estimatedCost,
           estimatedTime,
-          route: [`Transfer on chain ${data.chain}`],
+          route: [`Transfer on chain ${currentChain}`],
         };
       } catch (error) {
         console.error('[SimulationService] Real SDK transfer simulation failed:', error);
@@ -172,12 +245,13 @@ export class SimulationService {
       success: true,
       estimatedCost,
       estimatedTime,
-      route: [`Transfer on chain ${data.chain}`],
+      route: [`Transfer on chain ${currentChain}`],
     };
   }
 
-  private async simulateExecute(node: FlowNode): Promise<SimulationResult> {
+  private async simulateExecute(node: FlowNode, context: FlowContext): Promise<SimulationResult> {
     const data = node.data as ExecuteNodeData;
+    const currentChain = context.currentChain;
 
     console.log('[SimulationService] Using mock execute simulation');
 
@@ -196,7 +270,7 @@ export class SimulationService {
       success: true,
       estimatedCost,
       estimatedTime,
-      route: [`Execute ${data.action} on chain ${data.chain}`],
+      route: [`Execute ${data.action} on chain ${currentChain}`],
     };
   }
 

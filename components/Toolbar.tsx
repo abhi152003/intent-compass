@@ -1,6 +1,6 @@
 'use client';
 
-import { Wallet, ArrowRightLeft, Send, Zap, Flag, Play, RotateCcw, Save, FolderOpen } from 'lucide-react';
+import { Wallet, ArrowRightLeft, Send, Zap, Play, RotateCcw, Save, FolderOpen } from 'lucide-react';
 import { useFlowStore } from '@/lib/stores/flowStore';
 
 interface ToolbarProps {
@@ -59,15 +59,6 @@ export function Toolbar({ onSimulate, onExecute, onSaveTemplate, onLoadTemplate 
             >
               <Zap className="w-4 h-4 text-orange-400" />
               <span className="text-sm text-white">Execute</span>
-            </div>
-
-            <div
-              draggable
-              onDragStart={(e) => onDragStart(e, 'end')}
-              className="flex items-center gap-2 px-3 py-2 bg-indigo-900/40 border border-indigo-700 rounded-lg cursor-move hover:bg-indigo-900/60 transition-colors"
-            >
-              <Flag className="w-4 h-4 text-indigo-400" />
-              <span className="text-sm text-white">End</span>
             </div>
           </div>
 

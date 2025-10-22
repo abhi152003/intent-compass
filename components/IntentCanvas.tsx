@@ -15,7 +15,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { StartNode, BridgeNode, TransferNode, ExecuteNode, EndNode } from './nodes';
+import { StartNode, BridgeNode, TransferNode, ExecuteNode } from './nodes';
 import { NodeEditDialog } from './NodeEditDialog';
 import { useFlowStore } from '@/lib/stores/flowStore';
 import type { FlowNode, FlowEdge, FlowNodeData } from '@/types/flow';
@@ -55,7 +55,6 @@ export function IntentCanvas() {
       bridge: BridgeNode,
       transfer: TransferNode,
       execute: ExecuteNode,
-      end: EndNode,
     }),
     []
   );
@@ -156,8 +155,6 @@ export function IntentCanvas() {
                 return '#22c55e';
               case 'execute':
                 return '#f97316';
-              case 'end':
-                return '#6366f1';
               default:
                 return '#9ca3af';
             }
@@ -166,7 +163,9 @@ export function IntentCanvas() {
         <Panel position="top-left" className="bg-gray-800/90 backdrop-blur-sm p-3 rounded-lg border border-gray-700">
           <div className="text-sm text-gray-300">
             <div className="font-semibold mb-1 text-white">IntentCompass</div>
-            <div className="text-xs text-gray-400">Drag nodes from toolbar • Double-click to edit</div>
+            <div className="text-xs text-gray-400">
+              Drag nodes from toolbar • Double-click to edit • Select & press Backspace to remove
+            </div>
           </div>
         </Panel>
       </ReactFlow>
@@ -188,46 +187,30 @@ function getDefaultNodeData(type: string): FlowNodeData {
         label: 'Start',
         chain: 84532,
         token: 'USDC' as const,
-        amount: '100',
       };
     case 'bridge':
       return {
         label: 'Bridge',
-        fromChain: 84532,
         toChain: 11155111,
-        token: 'USDC' as const,
         amount: '100',
       };
     case 'transfer':
       return {
         label: 'Transfer',
-        chain: 84532,
-        token: 'USDC' as const,
-        amount: '100',
         recipient: '0x0000000000000000000000000000000000000000',
+        amount: '100',
       };
     case 'execute':
       return {
         label: 'Execute',
-        chain: 84532,
         action: 'stake' as const,
-        token: 'USDC' as const,
         amount: '100',
-      };
-    case 'end':
-      return {
-        label: 'End',
-        chain: 84532,
-        expectedToken: 'USDC' as const,
-        expectedAmount: '100',
-        description: 'Flow complete',
       };
     default:
       return {
         label: 'Start',
         chain: 84532,
         token: 'USDC' as const,
-        amount: '100',
       };
   }
 }

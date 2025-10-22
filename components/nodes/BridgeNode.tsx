@@ -36,18 +36,12 @@ export function BridgeNode({ data, selected }: BridgeNodeProps) {
 
       <div className="space-y-2 text-sm">
         <div className="text-gray-300">
-          <span className="text-gray-400">From:</span>{' '}
-          <span className="font-medium">{CHAIN_NAMES[data.fromChain]}</span>
-        </div>
-        <div className="text-gray-300">
-          <span className="text-gray-400">To:</span>{' '}
+          <span className="text-gray-400">To Chain:</span>{' '}
           <span className="font-medium">{CHAIN_NAMES[data.toChain]}</span>
         </div>
         <div className="text-gray-300">
           <span className="text-gray-400">Amount:</span>{' '}
-          <span className="font-medium">
-            {data.amount} {data.token}
-          </span>
+          <span className="font-medium">{data.amount}</span>
         </div>
         {data.estimatedCost && (
           <div className="text-gray-300">

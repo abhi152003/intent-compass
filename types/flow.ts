@@ -1,6 +1,6 @@
 import { Node, Edge } from '@xyflow/react';
 
-export type NodeType = 'start' | 'bridge' | 'transfer' | 'execute' | 'end';
+export type NodeType = 'start' | 'bridge' | 'transfer' | 'execute';
 
 export type ExecutionStatus = 'idle' | 'simulating' | 'executing' | 'completed' | 'failed';
 
@@ -28,32 +28,25 @@ export interface BaseNodeData {
 export interface StartNodeData extends BaseNodeData {
   chain: ChainId;
   token: Token;
-  amount: string;
   userAddress?: string;
 }
 
 export interface BridgeNodeData extends BaseNodeData {
-  fromChain: ChainId;
   toChain: ChainId;
-  token: Token;
   amount: string;
   estimatedCost?: string;
   estimatedTime?: number;
 }
 
 export interface TransferNodeData extends BaseNodeData {
-  chain: ChainId;
-  token: Token;
-  amount: string;
   recipient: string;
+  amount: string;
   estimatedCost?: string;
   estimatedTime?: number;
 }
 
 export interface ExecuteNodeData extends BaseNodeData {
-  chain: ChainId;
   action: ExecuteAction;
-  token: Token;
   amount: string;
   contractAddress?: string;
   estimatedCost?: string;
@@ -61,19 +54,11 @@ export interface ExecuteNodeData extends BaseNodeData {
   params?: Record<string, unknown>;
 }
 
-export interface EndNodeData extends BaseNodeData {
-  chain: ChainId;
-  expectedToken: Token;
-  expectedAmount: string;
-  description?: string;
-}
-
 export type FlowNodeData =
   | StartNodeData
   | BridgeNodeData
   | TransferNodeData
-  | ExecuteNodeData
-  | EndNodeData;
+  | ExecuteNodeData;
 
 export interface FlowNode extends Omit<Node, 'data' | 'type'> {
   type: NodeType;

@@ -37,10 +37,6 @@ export function StartNode({ data, selected }: StartNodeProps) {
           <span className="text-gray-400">Token:</span>{' '}
           <span className="font-medium">{data.token}</span>
         </div>
-        <div className="text-gray-300">
-          <span className="text-gray-400">Amount:</span>{' '}
-          <span className="font-medium">{data.amount}</span>
-        </div>
       </div>
 
       {data.status && (

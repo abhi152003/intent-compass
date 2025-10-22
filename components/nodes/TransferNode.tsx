@@ -1,7 +1,7 @@
 'use client';
 
 import { Handle, Position } from '@xyflow/react';
-import { type TransferNodeData, CHAIN_NAMES } from '@/types/flow';
+import { type TransferNodeData } from '@/types/flow';
 import { Send } from 'lucide-react';
 
 interface TransferNodeProps {
@@ -36,17 +36,11 @@ export function TransferNode({ data, selected }: TransferNodeProps) {
 
       <div className="space-y-2 text-sm">
         <div className="text-gray-300">
-          <span className="text-gray-400">Chain:</span>{' '}
-          <span className="font-medium">{CHAIN_NAMES[data.chain]}</span>
-        </div>
-        <div className="text-gray-300">
           <span className="text-gray-400">Amount:</span>{' '}
-          <span className="font-medium">
-            {data.amount} {data.token}
-          </span>
+          <span className="font-medium">{data.amount}</span>
         </div>
         <div className="text-gray-300">
-          <span className="text-gray-400">To:</span>{' '}
+          <span className="text-gray-400">Recipient:</span>{' '}
           <span className="font-medium text-xs">
             {data.recipient.slice(0, 6)}...{data.recipient.slice(-4)}
           </span>

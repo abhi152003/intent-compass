@@ -6,8 +6,16 @@ import type {
   BridgeNodeData,
   TransferNodeData,
   ExecuteNodeData,
+  StartNodeData,
+  Token,
+  ChainId,
 } from '@/types/flow';
 import type { NexusService } from './nexusSDK';
+
+interface FlowContext {
+  token: Token;
+  currentChain: ChainId;
+}
 
 export class ExecutionService {
   private nexusService: NexusService | null = null;
@@ -28,16 +36,36 @@ export class ExecutionService {
     };
 
     try {
+      // Find start node
+      const startNode = nodes.find((n) => n.type === 'start');
+      if (!startNode) {
+        throw new Error('Flow must have a start node');
+      }
+
+      // Check for at least one action node
+      const hasActionNode = nodes.some((n) =>
+        n.type === 'bridge' || n.type === 'transfer' || n.type === 'execute'
+      );
+      if (!hasActionNode) {
+        throw new Error('Flow must have at least one action node (bridge, transfer, or execute)');
+      }
+
+      const startData = startNode.data as StartNodeData;
+      const context: FlowContext = {
+        token: startData.token,
+        currentChain: startData.chain,
+      };
+
       const executionOrder = this.getExecutionOrder(nodes, edges);
 
       for (const node of executionOrder) {
-        if (node.type === 'start' || node.type === 'end') {
+        if (node.type === 'start') {
           continue;
         }
 
         execution.currentNodeId = node.id;
 
-        const result = await this.executeNode(node);
+        const result = await this.executeNode(node, context);
         execution.nodeResults.push(result);
 
         if (onProgress) {
@@ -48,6 +76,12 @@ export class ExecutionService {
           execution.status = 'failed';
           execution.endTime = Date.now();
           return execution;
+        }
+
+        // Update context after bridge node
+        if (node.type === 'bridge') {
+          const bridgeData = node.data as BridgeNodeData;
+          context.currentChain = bridgeData.toChain;
         }
 
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -69,15 +103,15 @@ export class ExecutionService {
     }
   }
 
-  private async executeNode(node: FlowNode): Promise<ExecutionResult> {
+  private async executeNode(node: FlowNode, context: FlowContext): Promise<ExecutionResult> {
     try {
       switch (node.type) {
         case 'bridge':
-          return await this.executeBridge(node);
+          return await this.executeBridge(node, context);
         case 'transfer':
-          return await this.executeTransfer(node);
+          return await this.executeTransfer(node, context);
         case 'execute':
-          return await this.executeAction(node);
+          return await this.executeAction(node, context);
         default:
           return {
             nodeId: node.id,
@@ -96,15 +130,16 @@ export class ExecutionService {
     }
   }
 
-  private async executeBridge(node: FlowNode): Promise<ExecutionResult> {
+  private async executeBridge(node: FlowNode, context: FlowContext): Promise<ExecutionResult> {
     const data = node.data as BridgeNodeData;
+    const token = context.token;
 
     if (this.nexusService && this.nexusService.isInitialized()) {
       try {
         console.log('[ExecutionService] Using real Nexus SDK for bridge');
 
         const result = await this.nexusService.bridge({
-          token: data.token,
+          token: token,
           amount: data.amount,
           toChainId: data.toChain,
         });
@@ -150,17 +185,19 @@ export class ExecutionService {
     };
   }
 
-  private async executeTransfer(node: FlowNode): Promise<ExecutionResult> {
+  private async executeTransfer(node: FlowNode, context: FlowContext): Promise<ExecutionResult> {
     const data = node.data as TransferNodeData;
+    const token = context.token;
+    const currentChain = context.currentChain;
 
     if (this.nexusService && this.nexusService.isInitialized()) {
       try {
         console.log('[ExecutionService] Using real Nexus SDK for transfer');
 
         const result = await this.nexusService.transfer({
-          token: data.token,
+          token: token,
           amount: data.amount,
-          toChainId: data.chain,
+          toChainId: currentChain,
           recipient: data.recipient,
         });
 
@@ -205,7 +242,7 @@ export class ExecutionService {
     };
   }
 
-  private async executeAction(node: FlowNode): Promise<ExecutionResult> {
+  private async executeAction(node: FlowNode, context: FlowContext): Promise<ExecutionResult> {
     const data = node.data as ExecuteNodeData;
 
     console.log('[ExecutionService] Using mock execute operation');

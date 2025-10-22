@@ -17,7 +17,7 @@ import { useNexus } from '@/contexts/NexusProvider';
 
 export default function Home() {
   const { isConnected } = useAccount();
-  const { nodes, edges, setSimulation, setExecution, updateExecutionStatus, updateNode } = useFlowStore();
+  const { nodes, edges, execution, setSimulation, setExecution, updateExecutionStatus, updateNode } = useFlowStore();
   const { nexusService, isInitialized, isInitializing, initializeIfNeeded } = useNexus();
 
   const [showSaveDialog, setShowSaveDialog] = useState(false);
@@ -86,25 +86,35 @@ export default function Home() {
     }
 
     setIsExecuting(true);
-    updateExecutionStatus('executing');
+
+    // Initialize execution state
+    setExecution({
+      status: 'executing',
+      nodeResults: [],
+      startTime: Date.now(),
+    });
 
     try {
-      const execution = await executionService.executeFlow(
+      const finalExecution = await executionService.executeFlow(
         nodes,
         edges,
         (nodeId, result) => {
           updateNode(nodeId, {
             status: result.success ? 'completed' : 'failed',
           } as any);
+
+          // Get current execution state from store
+          const currentExecution = useFlowStore.getState().execution;
           setExecution({
-            ...execution,
+            status: 'executing',
             currentNodeId: nodeId,
-            nodeResults: [...(execution?.nodeResults || []), result],
+            nodeResults: [...(currentExecution?.nodeResults || []), result],
+            startTime: currentExecution?.startTime || Date.now(),
           } as any);
         }
       );
 
-      setExecution(execution);
+      setExecution(finalExecution);
     } catch (error) {
       console.error('Execution failed:', error);
       updateExecutionStatus('failed');

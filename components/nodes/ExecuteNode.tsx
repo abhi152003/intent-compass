@@ -1,7 +1,7 @@
 'use client';
 
 import { Handle, Position } from '@xyflow/react';
-import { type ExecuteNodeData, CHAIN_NAMES } from '@/types/flow';
+import { type ExecuteNodeData } from '@/types/flow';
 import { Zap } from 'lucide-react';
 
 interface ExecuteNodeProps {
@@ -46,14 +46,8 @@ export function ExecuteNode({ data, selected }: ExecuteNodeProps) {
           <span className="font-medium">{actionLabels[data.action]}</span>
         </div>
         <div className="text-gray-300">
-          <span className="text-gray-400">Chain:</span>{' '}
-          <span className="font-medium">{CHAIN_NAMES[data.chain]}</span>
-        </div>
-        <div className="text-gray-300">
           <span className="text-gray-400">Amount:</span>{' '}
-          <span className="font-medium">
-            {data.amount} {data.token}
-          </span>
+          <span className="font-medium">{data.amount}</span>
         </div>
         {data.estimatedCost && (
           <div className="text-gray-300">
