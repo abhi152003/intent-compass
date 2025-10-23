@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -26,6 +26,12 @@ export function IntentCanvas() {
   const [localNodes, setLocalNodes, onNodesChange] = useNodesState(nodes);
   const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState(edges);
   const [editingNode, setEditingNode] = useState<FlowNode | null>(null);
+
+  // Sync store state to local state when store changes (for clear/load operations)
+  useEffect(() => {
+    setLocalNodes(nodes as any);
+    setLocalEdges(edges as any);
+  }, [nodes, edges, setLocalNodes, setLocalEdges]);
 
   const syncToStore = useCallback(() => {
     setNodes(localNodes);
@@ -127,7 +133,7 @@ export function IntentCanvas() {
   );
 
   return (
-    <div className="w-full h-full bg-gray-950">
+    <div className="w-full h-full bg-bg-primary">
       <ReactFlow
         nodes={localNodes}
         edges={localEdges}
@@ -139,31 +145,32 @@ export function IntentCanvas() {
         onNodeDoubleClick={onNodeDoubleClick}
         nodeTypes={nodeTypes}
         fitView
-        className="bg-gray-950"
+        className="bg-bg-primary"
       >
-        <Background className="bg-gray-950" />
-        <Controls className="bg-gray-800 border-gray-700" />
+        <Background className="bg-bg-primary" color="#7c7a72" gap={16} />
+        <Controls className="!bg-bg-elevated/90 !backdrop-blur-md !border-2 !border-border-medium !rounded-lg !shadow-lg [&>button]:!bg-bg-tertiary [&>button]:!border-border-medium [&>button]:!text-text-primary [&>button:hover]:!bg-bg-hover [&>button:hover]:!border-border-dark [&>button]:!transition-all [&>button]:!duration-200 [&>button]:!shadow-sm" />
         <MiniMap
-          className="bg-gray-900 border border-gray-700"
+          className="bg-bg-elevated border border-border-light rounded-lg shadow-md"
+          maskColor="rgba(20, 20, 19, 0.6)"
           nodeColor={(node) => {
             switch (node.type) {
               case 'start':
-                return '#3b82f6';
+                return '#d97757'; // Anthropic orange
               case 'bridge':
-                return '#a855f7';
+                return '#6a9bcc'; // Anthropic blue
               case 'transfer':
-                return '#22c55e';
+                return '#788c5d'; // Anthropic green
               case 'execute':
-                return '#f97316';
+                return '#d97757'; // Anthropic orange
               default:
-                return '#9ca3af';
+                return '#b0aea5'; // Mid gray
             }
           }}
         />
-        <Panel position="top-left" className="bg-gray-800/90 backdrop-blur-sm p-3 rounded-lg border border-gray-700">
-          <div className="text-sm text-gray-300">
-            <div className="font-semibold mb-1 text-white">IntentCompass</div>
-            <div className="text-xs text-gray-400">
+        <Panel position="top-left" className="bg-bg-elevated/95 backdrop-blur-md p-3 rounded-lg border border-border-light shadow-md">
+          <div className="text-sm text-text-secondary">
+            <div className="font-bold font-heading mb-1 text-text-primary">IntentCompass</div>
+            <div className="text-xs text-text-muted">
               Drag nodes from toolbar • Double-click to edit • Select & press Backspace to remove
             </div>
           </div>
@@ -175,6 +182,8 @@ export function IntentCanvas() {
         isOpen={editingNode !== null}
         onClose={() => setEditingNode(null)}
         onSave={handleNodeSave}
+        edges={localEdges as any}
+        nodes={localNodes as any}
       />
     </div>
   );

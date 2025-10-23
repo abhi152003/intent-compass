@@ -1,26 +1,206 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Lora:wght@400;500;600;700&display=swap');
+
+/* Anthropic Design System - Global Styles */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary Colors */
+  --color-dark: #141413;
+  --color-light: #faf9f5;
+  --color-mid-gray: #b0aea5;
+  --color-light-gray: #e8e6dc;
+
+  /* Accent Colors */
+  --color-accent-orange: #d97757;
+  --color-accent-blue: #6a9bcc;
+  --color-accent-green: #788c5d;
+
+  /* Background Colors */
+  --color-bg-primary: #141413;
+  --color-bg-secondary: #1c1b1a;
+  --color-bg-tertiary: #272624;
+  --color-bg-elevated: #2f2e2d;
+  --color-bg-hover: #353433;
+
+  /* Text Colors */
+  --color-text-primary: #faf9f5;
+  --color-text-secondary: #b0aea5;
+  --color-text-muted: #7c7a72;
+
+  /* Semantic Colors */
+  --color-success: #788c5d;
+  --color-warning: #d97757;
+  --color-error: #e85d5d;
+  --color-info: #6a9bcc;
+
+  /* Spacing & Layout */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 0.75rem;
+  --spacing-base: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Border Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  /* Transitions */
+  --transition-fast: 150ms;
+  --transition-base: 200ms;
+  --transition-slow: 300ms;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--color-bg-primary);
+  --color-foreground: var(--color-text-primary);
+  --font-sans: "Poppins", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Global Body Styles */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: "Lora", ui-serif, Georgia, serif;
+  font-weight: 400;
+  line-height: 1.5;
+  transition: background-color var(--transition-base) ease-in-out;
+}
+
+/* Headings use Poppins */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Poppins", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--color-accent-orange);
+  color: var(--color-bg-primary);
+}
+
+/* Focus ring styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-accent-orange);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for interactive elements */
+a, button, input, select, textarea {
+  transition: background-color var(--transition-base),
+              color var(--transition-base),
+              border-color var(--transition-base),
+              box-shadow var(--transition-base);
+}
+
+/* Disable text selection on UI elements */
+button, .cursor-pointer {
+  user-select: none;
+}
+
+/* React Flow Controls Styling Override */
+.react-flow__controls {
+  background-color: rgba(47, 46, 45, 0.9) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 2px solid #7c7a72 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 15px -3px rgba(20, 20, 19, 0.1), 0 4px 6px -1px rgba(20, 20, 19, 0.06) !important;
+  padding: 0.25rem !important;
+}
+
+.react-flow__controls-button {
+  background-color: #272624 !important;
+  border: 1px solid #7c7a72 !important;
+  border-radius: 0.5rem !important;
+  color: #faf9f5 !important;
+  width: 28px !important;
+  height: 28px !important;
+  margin: 2px !important;
+  transition: all 200ms ease-in-out !important;
+}
+
+.react-flow__controls-button:hover {
+  background-color: #353433 !important;
+  border-color: #b0aea5 !important;
+  box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.2) !important;
+}
+
+.react-flow__controls-button svg {
+  fill: #faf9f5 !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
+}
+
+/* React Flow MiniMap Styling Override */
+.react-flow__minimap {
+  background-color: rgba(47, 46, 45, 0.9) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 2px solid #7c7a72 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 15px -3px rgba(20, 20, 19, 0.1), 0 4px 6px -1px rgba(20, 20, 19, 0.06) !important;
+}
+
+.react-flow__minimap-mask {
+  fill: rgba(20, 20, 19, 0.7) !important;
+}
+
+.react-flow__minimap-node {
+  stroke: #7c7a72 !important;
+  stroke-width: 1px !important;
+}
+
+/* Select Dropdown Styling */
+select {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #1c1b1a !important;
+  color: #faf9f5 !important;
+  padding: 0.5rem !important;
+}
+
+select option:hover,
+select option:focus,
+select option:checked {
+  background-color: #353433 !important;
+  background: #353433 !important;
+  color: #faf9f5 !important;
+}
+
+select option:checked {
+  background: linear-gradient(0deg, #d97757 0%, #d97757 100%) !important;
+  background-color: #d97757 !important;
+  color: #141413 !important;
+  font-weight: 600 !important;
 }

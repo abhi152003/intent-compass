@@ -92,6 +92,11 @@ export interface ExecutionResult {
   explorerUrl?: string;
   error?: string;
   timestamp: number;
+  // BridgeAndExecute specific fields
+  bridgeExplorerUrl?: string;
+  bridgeTransactionHash?: string;
+  executeExplorerUrl?: string;
+  executeTransactionHash?: string;
 }
 
 export interface FlowExecution {

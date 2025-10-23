@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { Wallet, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
 import { useNexus } from '@/contexts/NexusProvider';
 import { CHAIN_NAMES } from '@/types/flow';
+import Card from './ui/Card';
+import Button from './ui/Button';
 
 interface TokenBalance {
   symbol: string;
@@ -77,39 +79,45 @@ export function UnifiedBalancePanel() {
 
   if (!isInitialized && !isInitializing) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
-        <div className="flex items-center gap-2 mb-3">
-          <Wallet className="w-5 h-5 text-blue-400" />
-          <h3 className="text-lg font-semibold text-white">Unified Balance</h3>
+      <Card variant="elevated" padding="lg">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 rounded-lg bg-accent-blue/20">
+            <Wallet className="w-5 h-5 text-accent-blue" />
+          </div>
+          <h3 className="text-lg font-bold font-heading text-text-primary">Unified Balance</h3>
         </div>
         <div className="text-center py-8">
-          <AlertCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-          <p className="text-gray-400 text-sm mb-4">
+          <AlertCircle className="w-12 h-12 text-text-muted mx-auto mb-3" />
+          <p className="text-text-secondary text-sm mb-4">
             Initialize Nexus SDK to view your balances across all chains
           </p>
-          <button
+          <Button
             onClick={initializeIfNeeded}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+            variant="primary"
+            size="md"
           >
             Initialize SDK
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+    <Card variant="elevated" padding="lg">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Wallet className="w-5 h-5 text-blue-400" />
-          <h3 className="text-lg font-semibold text-white">Unified Balance</h3>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent-blue/20">
+            <Wallet className="w-5 h-5 text-accent-blue" />
+          </div>
+          <h3 className="text-lg font-bold font-heading text-text-primary">Unified Balance</h3>
         </div>
         <button
           onClick={fetchBalances}
           disabled={isLoading || !isInitialized}
-          className="p-2 text-gray-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-2 text-text-muted hover:text-text-primary transition-all duration-base disabled:opacity-50 disabled:cursor-not-allowed hover:bg-bg-hover rounded-lg"
           title="Refresh balances"
+          aria-label="Refresh balances"
         >
           <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
         </button>
@@ -117,27 +125,27 @@ export function UnifiedBalancePanel() {
 
       {isLoading && balances.length === 0 ? (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+          <Loader2 className="w-8 h-8 text-accent-blue animate-spin" />
         </div>
       ) : error ? (
-        <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-4">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+        <Card variant="default" padding="md" className="bg-error/10 border-error/30">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
             <div>
-              <div className="text-sm font-medium text-red-300 mb-1">Error Loading Balances</div>
-              <div className="text-xs text-red-400">{error}</div>
+              <div className="text-sm font-semibold text-error mb-1">Error Loading Balances</div>
+              <div className="text-xs text-error/80">{error}</div>
             </div>
           </div>
-        </div>
+        </Card>
       ) : balances.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-gray-400 text-sm">No balances found</p>
-          <p className="text-gray-500 text-xs mt-1">
+          <p className="text-text-secondary text-sm">No balances found</p>
+          <p className="text-text-muted text-xs mt-1">
             Add testnet tokens to see your balance
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {balances.map((token) => {
             const isExpanded = expandedToken === token.symbol;
             const hasBreakdown = token.breakdown && token.breakdown.length > 0;
@@ -145,27 +153,30 @@ export function UnifiedBalancePanel() {
             return (
               <div
                 key={token.symbol}
-                className="bg-gray-800/50 rounded-lg border border-gray-700 overflow-hidden"
+                className="bg-bg-secondary rounded-lg border border-border-light overflow-hidden transition-all duration-base"
               >
                 <div
-                  className={`p-4 ${hasBreakdown ? 'cursor-pointer hover:bg-gray-800/70' : ''}`}
+                  className={`p-4 transition-all duration-base ${hasBreakdown ? 'cursor-pointer hover:bg-bg-tertiary' : ''}`}
                   onClick={() => hasBreakdown && setExpandedToken(isExpanded ? null : token.symbol)}
+                  role="button"
+                  tabIndex={hasBreakdown ? 0 : -1}
+                  onKeyDown={(e) => hasBreakdown && (e.key === 'Enter' || e.key === ' ') && setExpandedToken(isExpanded ? null : token.symbol)}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-semibold text-white">{token.symbol}</div>
+                      <div className="font-semibold font-heading text-text-primary">{token.symbol}</div>
                       {token.balanceInFiat && (
-                        <div className="text-xs text-gray-400 mt-0.5">
+                        <div className="text-xs text-text-muted mt-1">
                           ${token.balanceInFiat}
                         </div>
                       )}
                     </div>
                     <div className="text-right">
-                      <div className="font-medium text-white">
+                      <div className="font-semibold font-mono text-text-primary">
                         {parseFloat(token.balance).toFixed(6)}
                       </div>
                       {hasBreakdown && (
-                        <div className="text-xs text-gray-400 mt-0.5">
+                        <div className="text-xs text-text-muted mt-1">
                           {token.breakdown?.length} chain{token.breakdown?.length !== 1 ? 's' : ''}
                         </div>
                       )}
@@ -174,15 +185,15 @@ export function UnifiedBalancePanel() {
                 </div>
 
                 {isExpanded && hasBreakdown && (
-                  <div className="border-t border-gray-700 bg-gray-800/30">
+                  <div className="border-t border-border-light bg-bg-tertiary/50">
                     <div className="p-3 space-y-2">
                       {token.breakdown?.map((chainBalance, idx) => (
                         <div
                           key={idx}
                           className="flex items-center justify-between text-sm"
                         >
-                          <div className="text-gray-400">{chainBalance.chain.name}</div>
-                          <div className="font-mono text-gray-300">
+                          <div className="text-text-secondary">{chainBalance.chain.name}</div>
+                          <div className="font-mono text-text-primary">
                             {parseFloat(chainBalance.balance).toFixed(6)}
                           </div>
                         </div>
@@ -197,12 +208,12 @@ export function UnifiedBalancePanel() {
       )}
 
       {balances.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-800">
-          <p className="text-xs text-gray-500 text-center">
+        <div className="mt-4 pt-4 border-t border-border-light">
+          <p className="text-xs text-text-muted text-center">
             Showing balances across all testnet chains
           </p>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

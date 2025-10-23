@@ -301,6 +301,37 @@ class NexusService {
     return this.sdk.utils;
   }
 
+  getProvider() {
+    if (!this.sdk) throw new Error('Nexus SDK not initialized');
+
+    // Use window.ethereum if available (browser wallet)
+    if (typeof window !== 'undefined' && (window as any).ethereum) {
+      const { ethers } = require('ethers');
+      return new ethers.BrowserProvider((window as any).ethereum);
+    }
+
+    return (this.sdk as any).provider;
+  }
+
+  async getSigner() {
+    if (!this.sdk) throw new Error('Nexus SDK not initialized');
+
+    // Use window.ethereum if available (browser wallet)
+    if (typeof window !== 'undefined' && (window as any).ethereum) {
+      const { ethers } = require('ethers');
+      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const signer = await provider.getSigner();
+      return signer;
+    }
+
+    // Fallback to SDK provider
+    const provider = (this.sdk as any).provider;
+    if (!provider) return null;
+
+    const signer = await provider.getSigner();
+    return signer;
+  }
+
   async testSupportedRoutes(): Promise<{
     testedRoutes: Array<{ from: number; to: number; token: string; success: boolean; error?: string }>;
     workingRoutes: Array<{ from: number; to: number; token: string }>;

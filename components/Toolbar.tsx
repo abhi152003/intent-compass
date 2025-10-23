@@ -2,6 +2,8 @@
 
 import { Wallet, ArrowRightLeft, Send, Zap, Play, RotateCcw, Save, FolderOpen } from 'lucide-react';
 import { useFlowStore } from '@/lib/stores/flowStore';
+import Button from './ui/Button';
+import Tooltip from './ui/Tooltip';
 
 interface ToolbarProps {
   onSimulate?: () => void;
@@ -18,99 +20,136 @@ export function Toolbar({ onSimulate, onExecute, onSaveTemplate, onLoadTemplate 
     event.dataTransfer.effectAllowed = 'move';
   };
 
+  const nodeButtons = [
+    {
+      type: 'start',
+      label: 'Start',
+      icon: <Wallet className="w-4 h-4" />,
+      tooltip: 'Define wallet & initial amount',
+      colorClass: 'from-accent-orange/20 to-accent-orange/10 border-accent-orange/30 hover:from-accent-orange/30 hover:to-accent-orange/20',
+      textColor: 'text-accent-orange',
+    },
+    {
+      type: 'bridge',
+      label: 'Bridge',
+      icon: <ArrowRightLeft className="w-4 h-4" />,
+      tooltip: 'Cross-chain bridge transaction',
+      colorClass: 'from-accent-blue/20 to-accent-blue/10 border-accent-blue/30 hover:from-accent-blue/30 hover:to-accent-blue/20',
+      textColor: 'text-accent-blue',
+    },
+    {
+      type: 'transfer',
+      label: 'Transfer',
+      icon: <Send className="w-4 h-4" />,
+      tooltip: 'Transfer tokens between accounts',
+      colorClass: 'from-accent-green/20 to-accent-green/10 border-accent-green/30 hover:from-accent-green/30 hover:to-accent-green/20',
+      textColor: 'text-accent-green',
+    },
+    {
+      type: 'execute',
+      label: 'Execute',
+      icon: <Zap className="w-4 h-4" />,
+      tooltip: 'Execute smart contract function',
+      colorClass: 'from-accent-orange/20 to-accent-orange/10 border-accent-orange/30 hover:from-accent-orange/30 hover:to-accent-orange/20',
+      textColor: 'text-accent-orange',
+    },
+  ];
+
   return (
-    <div className="bg-gray-900 border-b border-gray-800 p-4">
-      <div className="container mx-auto">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="text-sm font-semibold text-gray-400 mr-2">Nodes:</div>
-
-            <div
-              draggable
-              onDragStart={(e) => onDragStart(e, 'start')}
-              className="flex items-center gap-2 px-3 py-2 bg-blue-900/40 border border-blue-700 rounded-lg cursor-move hover:bg-blue-900/60 transition-colors"
-            >
-              <Wallet className="w-4 h-4 text-blue-400" />
-              <span className="text-sm text-white">Start</span>
-            </div>
-
-            <div
-              draggable
-              onDragStart={(e) => onDragStart(e, 'bridge')}
-              className="flex items-center gap-2 px-3 py-2 bg-purple-900/40 border border-purple-700 rounded-lg cursor-move hover:bg-purple-900/60 transition-colors"
-            >
-              <ArrowRightLeft className="w-4 h-4 text-purple-400" />
-              <span className="text-sm text-white">Bridge</span>
-            </div>
-
-            <div
-              draggable
-              onDragStart={(e) => onDragStart(e, 'transfer')}
-              className="flex items-center gap-2 px-3 py-2 bg-green-900/40 border border-green-700 rounded-lg cursor-move hover:bg-green-900/60 transition-colors"
-            >
-              <Send className="w-4 h-4 text-green-400" />
-              <span className="text-sm text-white">Transfer</span>
-            </div>
-
-            <div
-              draggable
-              onDragStart={(e) => onDragStart(e, 'execute')}
-              className="flex items-center gap-2 px-3 py-2 bg-orange-900/40 border border-orange-700 rounded-lg cursor-move hover:bg-orange-900/60 transition-colors"
-            >
-              <Zap className="w-4 h-4 text-orange-400" />
-              <span className="text-sm text-white">Execute</span>
+    <div className="bg-bg-secondary/50 backdrop-blur-sm border-b border-border-light p-4 sticky top-[90px] z-30 transition-all duration-base">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="flex items-center justify-between gap-6 flex-wrap">
+          {/* Node Dragging Section */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold text-text-secondary whitespace-nowrap">
+              Nodes:
+            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              {nodeButtons.map((nodeBtn) => (
+                <Tooltip key={nodeBtn.type} content={nodeBtn.tooltip}>
+                  <div
+                    draggable
+                    onDragStart={(e) => onDragStart(e, nodeBtn.type)}
+                    className={`flex items-center gap-2 px-3 py-2 bg-gradient-to-r ${nodeBtn.colorClass} border rounded-lg cursor-move transition-all duration-base active:scale-95`}
+                  >
+                    <span className={nodeBtn.textColor}>{nodeBtn.icon}</span>
+                    <span className="text-sm font-semibold text-text-primary hidden sm:inline">
+                      {nodeBtn.label}
+                    </span>
+                  </div>
+                </Tooltip>
+              ))}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onSimulate}
-              disabled={!onSimulate || !!simulation}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
-            >
-              <Play className="w-4 h-4" />
-              Simulate
-            </button>
+          {/* Action Buttons Section */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Primary Actions */}
+            <Tooltip content="Run simulation without execution">
+              <Button
+                onClick={onSimulate}
+                disabled={!onSimulate || !!simulation}
+                variant="primary"
+                size="sm"
+                icon={<Play className="w-4 h-4" />}
+              >
+                <span className="hidden sm:inline">Simulate</span>
+              </Button>
+            </Tooltip>
 
-            <button
-              onClick={onExecute}
-              disabled={!onExecute || !simulation || !!execution}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
-            >
-              <Play className="w-4 h-4" />
-              Execute
-            </button>
+            <Tooltip content="Execute the flow on-chain">
+              <Button
+                onClick={onExecute}
+                disabled={!onExecute || !simulation || !!execution}
+                variant="primary"
+                size="sm"
+                icon={<Play className="w-4 h-4" />}
+              >
+                <span className="hidden sm:inline">Execute</span>
+              </Button>
+            </Tooltip>
 
-            <div className="w-px h-8 bg-gray-700 mx-2" />
+            {/* Divider */}
+            <div className="w-px h-6 bg-border-light mx-2" />
 
-            <button
-              onClick={onSaveTemplate}
-              disabled={!onSaveTemplate}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm"
-            >
-              <Save className="w-4 h-4" />
-              Save
-            </button>
+            {/* Secondary Actions */}
+            <Tooltip content="Save flow as template">
+              <Button
+                onClick={onSaveTemplate}
+                disabled={!onSaveTemplate}
+                variant="secondary"
+                size="sm"
+                icon={<Save className="w-4 h-4" />}
+              >
+                <span className="hidden sm:inline">Save</span>
+              </Button>
+            </Tooltip>
 
-            <button
-              onClick={onLoadTemplate}
-              disabled={!onLoadTemplate}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors text-sm"
-            >
-              <FolderOpen className="w-4 h-4" />
-              Load
-            </button>
+            <Tooltip content="Load saved template">
+              <Button
+                onClick={onLoadTemplate}
+                disabled={!onLoadTemplate}
+                variant="secondary"
+                size="sm"
+                icon={<FolderOpen className="w-4 h-4" />}
+              >
+                <span className="hidden sm:inline">Load</span>
+              </Button>
+            </Tooltip>
 
-            <button
-              onClick={() => {
-                resetExecution();
-                clearFlow();
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-sm"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Clear
-            </button>
+            <Tooltip content="Clear canvas and reset state">
+              <Button
+                onClick={() => {
+                  resetExecution();
+                  clearFlow();
+                }}
+                variant="secondary"
+                size="sm"
+                icon={<RotateCcw className="w-4 h-4" />}
+              >
+                <span className="hidden sm:inline">Clear</span>
+              </Button>
+            </Tooltip>
           </div>
         </div>
       </div>

@@ -138,24 +138,11 @@ export class TemplateService {
               token: 'USDC' as const,
               amount: '100',
             },
-          },
-          {
-            id: 'end-1',
-            type: 'end',
-            position: { x: 250, y: 500 },
-            data: {
-              label: 'End',
-              chain: 11155111,
-              expectedToken: 'USDC' as const,
-              expectedAmount: '100',
-              description: 'Earning yield on Aave',
-            },
-          },
+          }
         ] as FlowNode[],
         edges: [
           { id: 'e1-2', source: 'start-1', target: 'bridge-1', type: 'smoothstep', animated: true },
-          { id: 'e2-3', source: 'bridge-1', target: 'execute-1', type: 'smoothstep', animated: true },
-          { id: 'e3-4', source: 'execute-1', target: 'end-1', type: 'smoothstep', animated: true },
+          { id: 'e2-3', source: 'bridge-1', target: 'execute-1', type: 'smoothstep', animated: true }
         ],
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -188,23 +175,10 @@ export class TemplateService {
               token: 'USDC' as const,
               amount: '50',
             },
-          },
-          {
-            id: 'end-1',
-            type: 'end',
-            position: { x: 250, y: 350 },
-            data: {
-              label: 'End',
-              chain: 11155111,
-              expectedToken: 'USDC' as const,
-              expectedAmount: '50',
-              description: 'Bridged successfully',
-            },
-          },
+          }
         ] as FlowNode[],
         edges: [
-          { id: 'e1-2', source: 'start-1', target: 'bridge-1', type: 'smoothstep', animated: true },
-          { id: 'e2-3', source: 'bridge-1', target: 'end-1', type: 'smoothstep', animated: true },
+          { id: 'e1-2', source: 'start-1', target: 'bridge-1', type: 'smoothstep', animated: true }
         ],
         createdAt: Date.now(),
         updatedAt: Date.now(),
