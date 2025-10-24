@@ -11,6 +11,8 @@ import {
   useEdgesState,
   type Connection,
   type NodeTypes,
+  type NodeChange,
+  type EdgeChange,
   Panel,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -29,8 +31,8 @@ export function IntentCanvas() {
 
   // Sync store state to local state when store changes (for clear/load operations)
   useEffect(() => {
-    setLocalNodes(nodes as any);
-    setLocalEdges(edges as any);
+    setLocalNodes(nodes);
+    setLocalEdges(edges);
   }, [nodes, edges, setLocalNodes, setLocalEdges]);
 
   const syncToStore = useCallback(() => {
@@ -49,7 +51,7 @@ export function IntentCanvas() {
         sourceHandle: connection.sourceHandle || null,
         targetHandle: connection.targetHandle || null,
       };
-      setLocalEdges((eds) => addEdge(newEdge as any, eds));
+      setLocalEdges((eds) => addEdge(newEdge, eds));
       addEdgeToStore(newEdge);
     },
     [setLocalEdges, addEdgeToStore]
@@ -77,7 +79,11 @@ export function IntentCanvas() {
       const type = event.dataTransfer.getData('application/reactflow');
       if (!type) return;
 
-      const bounds = (event.target as HTMLElement).getBoundingClientRect();
+      const reactFlowElement = event.currentTarget as HTMLElement;
+      const bounds = reactFlowElement.getBoundingClientRect();
+      
+      // Calculate position directly from client coordinates relative to the flow container
+      // Using simple offset from drop point
       const position = {
         x: event.clientX - bounds.left - 100,
         y: event.clientY - bounds.top - 50,
@@ -90,14 +96,14 @@ export function IntentCanvas() {
         data: getDefaultNodeData(type),
       };
 
-      setLocalNodes((nds) => [...nds, newNode] as any);
+      setLocalNodes((nds) => [...nds, newNode]);
       syncToStore();
     },
     [setLocalNodes, syncToStore]
   );
 
   const handleNodesChange = useCallback(
-    (changes: any) => {
+    (changes: NodeChange<FlowNode>[]) => {
       onNodesChange(changes);
       setTimeout(syncToStore, 0);
     },
@@ -105,7 +111,7 @@ export function IntentCanvas() {
   );
 
   const handleEdgesChange = useCallback(
-    (changes: any) => {
+    (changes: EdgeChange<FlowEdge>[]) => {
       onEdgesChange(changes);
       setTimeout(syncToStore, 0);
     },
@@ -113,15 +119,15 @@ export function IntentCanvas() {
   );
 
   const onNodeDoubleClick = useCallback(
-    (event: React.MouseEvent, node: any) => {
+    (_event: React.MouseEvent, node: FlowNode) => {
       console.log('Node double-clicked:', node);
-      setEditingNode(node as FlowNode);
+      setEditingNode(node);
     },
     []
   );
 
   const handleNodeSave = useCallback(
-    (nodeId: string, updates: Record<string, any>) => {
+    (nodeId: string, updates: Record<string, unknown>) => {
       updateNode(nodeId, updates);
       setLocalNodes((nds) =>
         nds.map((n) =>
@@ -182,8 +188,8 @@ export function IntentCanvas() {
         isOpen={editingNode !== null}
         onClose={() => setEditingNode(null)}
         onSave={handleNodeSave}
-        edges={localEdges as any}
-        nodes={localNodes as any}
+        edges={localEdges as FlowEdge[]}
+        nodes={localNodes as FlowNode[]}
       />
     </div>
   );

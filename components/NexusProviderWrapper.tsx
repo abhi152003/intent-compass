@@ -8,11 +8,37 @@ interface NexusProviderWrapperProps {
   children: React.ReactNode;
 }
 
-function createEIP1193Provider(walletClient: any) {
-  const eventListeners = new Map<string | symbol, Set<(...args: any[]) => void>>();
+type EIP1193RequestParams = { method: string; params?: unknown[] };
+type EventListener = (...args: unknown[]) => void;
 
-  const provider: any = {
-    request: async ({ method, params }: { method: string; params?: unknown[] }) => {
+interface WalletClient {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+  account?: { address: string };
+  chain?: { id: number };
+}
+
+interface EIP1193Provider {
+  request: (args: EIP1193RequestParams) => Promise<unknown>;
+  on: (eventName: string | symbol, listener: EventListener) => EIP1193Provider;
+  once: (eventName: string | symbol, listener: EventListener) => EIP1193Provider;
+  removeListener: (eventName: string | symbol, listener: EventListener) => EIP1193Provider;
+  off: (eventName: string | symbol, listener: EventListener) => EIP1193Provider;
+  isMetaMask: boolean;
+  isConnected: () => boolean;
+  selectedAddress?: string;
+  chainId?: string;
+  account?: { address: string };
+  chain?: { id: number };
+  enable: () => Promise<unknown>;
+  send: (methodOrPayload: string | EIP1193RequestParams, paramsOrCallback?: unknown) => Promise<unknown>;
+  sendAsync: (payload: EIP1193RequestParams, callback: (error: Error | null, result?: { result: unknown }) => void) => void;
+}
+
+function createEIP1193Provider(walletClient: WalletClient): EIP1193Provider {
+  const eventListeners = new Map<string | symbol, Set<EventListener>>();
+
+  const provider: EIP1193Provider = {
+    request: async ({ method, params }: EIP1193RequestParams) => {
       console.log(`[EIP-1193 Provider] Request: ${method}`, params);
       try {
         const result = await walletClient.request({
@@ -26,29 +52,29 @@ function createEIP1193Provider(walletClient: any) {
         throw error;
       }
     },
-    on(eventName: string | symbol, listener: (...args: any[]) => void) {
+    on(eventName: string | symbol, listener: EventListener) {
       if (!eventListeners.has(eventName)) {
         eventListeners.set(eventName, new Set());
       }
       eventListeners.get(eventName)!.add(listener);
-      return this;
+      return provider;
     },
-    once(eventName: string | symbol, listener: (...args: any[]) => void) {
-      const onceListener = (...args: any[]) => {
+    once(eventName: string | symbol, listener: EventListener) {
+      const onceListener: EventListener = (...args: unknown[]) => {
         listener(...args);
-        this.removeListener(eventName, onceListener);
+        provider.removeListener(eventName, onceListener);
       };
-      return this.on(eventName, onceListener);
+      return provider.on(eventName, onceListener);
     },
-    removeListener(eventName: string | symbol, listener: (...args: any[]) => void) {
+    removeListener(eventName: string | symbol, listener: EventListener) {
       const listeners = eventListeners.get(eventName);
       if (listeners) {
         listeners.delete(listener);
       }
-      return this;
+      return provider;
     },
-    off(eventName: string | symbol, listener: (...args: any[]) => void) {
-      return this.removeListener(eventName, listener);
+    off(eventName: string | symbol, listener: EventListener) {
+      return provider.removeListener(eventName, listener);
     },
     isMetaMask: true,
     isConnected: () => {
@@ -78,18 +104,18 @@ function createEIP1193Provider(walletClient: any) {
       const accounts = await provider.request({ method: 'eth_requestAccounts' });
       return accounts;
     },
-    send: (methodOrPayload: any, paramsOrCallback: any) => {
+    send: (methodOrPayload: string | EIP1193RequestParams, paramsOrCallback?: unknown) => {
       console.log(`[EIP-1193 Provider] Legacy send() called`, methodOrPayload);
       if (typeof methodOrPayload === 'string') {
-        return provider.request({ method: methodOrPayload, params: paramsOrCallback });
+        return provider.request({ method: methodOrPayload, params: paramsOrCallback as unknown[] });
       }
       return provider.request(methodOrPayload);
     },
-    sendAsync: (payload: any, callback: any) => {
+    sendAsync: (payload: EIP1193RequestParams, callback: (error: Error | null, result?: { result: unknown }) => void) => {
       console.log(`[EIP-1193 Provider] Legacy sendAsync() called`, payload);
       provider.request(payload)
-        .then((result: any) => callback(null, { result }))
-        .catch((error: any) => callback(error));
+        .then((result: unknown) => callback(null, { result }))
+        .catch((error: Error) => callback(error));
     },
   };
 
@@ -104,7 +130,7 @@ export function NexusProviderWrapper({ children }: NexusProviderWrapperProps) {
         account: walletClient.account?.address,
         chainId: walletClient.chain?.id,
       });
-      return createEIP1193Provider(walletClient);
+      return createEIP1193Provider(walletClient as WalletClient);
     }
     console.log('[NexusProviderWrapper] No wallet client available yet');
     return null;
@@ -112,7 +138,7 @@ export function NexusProviderWrapper({ children }: NexusProviderWrapperProps) {
 
   useEffect(() => {
     if (eip1193Provider && typeof window !== 'undefined') {
-      (window as any).ethereum = eip1193Provider;
+      (window as typeof window & { ethereum: EIP1193Provider }).ethereum = eip1193Provider;
       console.log('✅ [NexusProviderWrapper] EIP-1193 wallet provider injected at window.ethereum');
       console.log('   - Provider properties:', {
         isConnected: eip1193Provider.isConnected(),

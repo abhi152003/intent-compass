@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { FlowStore, FlowNode, FlowEdge, FlowTemplate, FlowNodeData, FlowSimulation, FlowExecution, ExecutionStatus } from '@/types/flow';
+import type { FlowStore, FlowTemplate } from '@/types/flow';
 
 export const useFlowStore = create<FlowStore>((set, get) => ({
   // Nodes and Edges

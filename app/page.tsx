@@ -17,7 +17,7 @@ import { useNexus } from '@/contexts/NexusProvider';
 
 export default function Home() {
   const { isConnected } = useAccount();
-  const { nodes, edges, execution, setSimulation, setExecution, updateExecutionStatus, updateNode } = useFlowStore();
+  const { nodes, edges, setSimulation, setExecution, updateExecutionStatus, updateNode } = useFlowStore();
   const { nexusService, isInitialized, isInitializing, initializeIfNeeded } = useNexus();
 
   const [showSaveDialog, setShowSaveDialog] = useState(false);
@@ -55,7 +55,7 @@ export default function Home() {
         updateNode(result.nodeId, {
           estimatedCost: result.estimatedCost,
           estimatedTime: result.estimatedTime,
-        } as any);
+        });
       });
     } catch (error) {
       console.error('Simulation failed:', error);
@@ -101,7 +101,7 @@ export default function Home() {
         (nodeId, result) => {
           updateNode(nodeId, {
             status: result.success ? 'completed' : 'failed',
-          } as any);
+          });
 
           // Get current execution state from store
           const currentExecution = useFlowStore.getState().execution;
@@ -110,7 +110,7 @@ export default function Home() {
             currentNodeId: nodeId,
             nodeResults: [...(currentExecution?.nodeResults || []), result],
             startTime: currentExecution?.startTime || Date.now(),
-          } as any);
+          });
         }
       );
 

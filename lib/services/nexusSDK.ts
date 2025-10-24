@@ -28,17 +28,21 @@ class NexusService {
         console.log('[NexusService] Reusing existing NexusSDK instance');
       }
 
-      console.log('[NexusService] localStorage keys before init:', Object.keys(localStorage).filter(k =>
-        k.includes('arcana') || k.includes('siwe') || k.includes('ca-') || k.includes('session')
-      ));
+      if (typeof window !== 'undefined') {
+        console.log('[NexusService] localStorage keys before init:', Object.keys(localStorage).filter(k =>
+          k.includes('arcana') || k.includes('siwe') || k.includes('ca-') || k.includes('session')
+        ));
+      }
 
       console.log('[NexusService] Calling sdk.initialize()...');
       await this.sdk.initialize(provider);
       this.initialized = true;
 
-      console.log('[NexusService] localStorage keys after init:', Object.keys(localStorage).filter(k =>
-        k.includes('arcana') || k.includes('siwe') || k.includes('ca-') || k.includes('session')
-      ));
+      if (typeof window !== 'undefined') {
+        console.log('[NexusService] localStorage keys after init:', Object.keys(localStorage).filter(k =>
+          k.includes('arcana') || k.includes('siwe') || k.includes('ca-') || k.includes('session')
+        ));
+      }
 
       console.log('✅ [NexusService] SDK initialized successfully');
     } catch (error) {
@@ -111,7 +115,7 @@ class NexusService {
       const utils = this.getUtils();
       console.log('[NexusService] SDK utilities available:', utils);
 
-      const adapter = (utils as any).adapter;
+      const adapter = (utils as unknown as { adapter?: { bridgeService?: { getSupportedRoutes?: () => Promise<unknown>; universes?: unknown } } }).adapter;
       if (adapter) {
         console.log('[NexusService] ✅ ChainAbstractionAdapter found');
         console.log('[NexusService] Adapter properties:', Object.keys(adapter));
@@ -119,27 +123,31 @@ class NexusService {
         if (adapter.bridgeService) {
           console.log('[NexusService] ✅ BridgeService found');
           console.log('[NexusService] BridgeService methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(adapter.bridgeService)));
-          
-          if (typeof (adapter.bridgeService as any).getSupportedRoutes === 'function') {
-            const routes = await (adapter.bridgeService as any).getSupportedRoutes();
+
+          const bridgeServiceExt = adapter.bridgeService as typeof adapter.bridgeService & { getSupportedRoutes?: () => Promise<unknown>; universes?: unknown };
+
+          if (typeof bridgeServiceExt.getSupportedRoutes === 'function') {
+            const routes = await bridgeServiceExt.getSupportedRoutes();
             console.log('[NexusService] 📋 Supported routes from bridgeService:', routes);
             return { source: 'bridgeService.getSupportedRoutes', data: routes };
           }
 
-          if ((adapter.bridgeService as any).universes) {
-            console.log('[NexusService] 📋 Universes from bridgeService:', (adapter.bridgeService as any).universes);
-            return { source: 'bridgeService.universes', data: (adapter.bridgeService as any).universes };
+          if (bridgeServiceExt.universes) {
+            console.log('[NexusService] 📋 Universes from bridgeService:', bridgeServiceExt.universes);
+            return { source: 'bridgeService.universes', data: bridgeServiceExt.universes };
           }
 
           console.log('[NexusService] BridgeService full object:', adapter.bridgeService);
         }
 
-        if (typeof utils.getTestnetTokenMetadata === 'function') {
+        const utilsExt = utils as typeof utils & { getTestnetTokenMetadata?: (token: string) => unknown; getChainMetadata?: (chainId: number) => unknown };
+
+        if (typeof utilsExt.getTestnetTokenMetadata === 'function') {
           console.log('[NexusService] ✅ getTestnetTokenMetadata found');
           try {
-            const usdcMeta = utils.getTestnetTokenMetadata('USDC');
-            const usdtMeta = utils.getTestnetTokenMetadata('USDT');
-            const ethMeta = utils.getTestnetTokenMetadata('ETH');
+            const usdcMeta = utilsExt.getTestnetTokenMetadata('USDC');
+            const usdtMeta = utilsExt.getTestnetTokenMetadata('USDT');
+            const ethMeta = utilsExt.getTestnetTokenMetadata('ETH');
             console.log('[NexusService] 📋 Testnet token metadata:', { USDC: usdcMeta, USDT: usdtMeta, ETH: ethMeta });
             return { source: 'testnetTokenMetadata', data: { USDC: usdcMeta, USDT: usdtMeta, ETH: ethMeta } };
           } catch (e) {
@@ -147,13 +155,13 @@ class NexusService {
           }
         }
 
-        if (typeof utils.getChainMetadata === 'function') {
+        if (typeof utilsExt.getChainMetadata === 'function') {
           console.log('[NexusService] ✅ getChainMetadata found');
           try {
-            const chains: any[] = [11155111, 84532, 421614];
+            const chains: number[] = [11155111, 84532, 421614];
             const metadata = chains.map(chainId => ({
               chainId,
-              meta: (utils.getChainMetadata as any)(chainId)
+              meta: utilsExt.getChainMetadata!(chainId)
             }));
             console.log('[NexusService] 📋 Chain metadata:', metadata);
             return { source: 'chainMetadata', data: metadata };
@@ -166,15 +174,17 @@ class NexusService {
       console.log('[NexusService] Trying direct SDK properties...');
       const sdkKeys = Object.getOwnPropertyNames(this.sdk).slice(0, 20);
       console.log('[NexusService] SDK keys (first 20):', sdkKeys);
-      
-      if ((this.sdk as any).routes) {
-        console.log('[NexusService] 📋 Routes found on SDK:', (this.sdk as any).routes);
-        return { source: 'sdk.routes', data: (this.sdk as any).routes };
+
+      const sdkExt = this.sdk as typeof this.sdk & { routes?: unknown; config?: unknown };
+
+      if (sdkExt.routes) {
+        console.log('[NexusService] 📋 Routes found on SDK:', sdkExt.routes);
+        return { source: 'sdk.routes', data: sdkExt.routes };
       }
 
-      if ((this.sdk as any).config) {
-        console.log('[NexusService] 📋 Config found on SDK:', (this.sdk as any).config);
-        return { source: 'sdk.config', data: (this.sdk as any).config };
+      if (sdkExt.config) {
+        console.log('[NexusService] 📋 Config found on SDK:', sdkExt.config);
+        return { source: 'sdk.config', data: sdkExt.config };
       }
 
       console.log('[NexusService] ⚠️ No standard route/support methods found on SDK');
@@ -305,31 +315,36 @@ class NexusService {
     if (!this.sdk) throw new Error('Nexus SDK not initialized');
 
     // Use window.ethereum if available (browser wallet)
-    if (typeof window !== 'undefined' && (window as any).ethereum) {
-      const { ethers } = require('ethers');
-      return new ethers.BrowserProvider((window as any).ethereum);
+    const windowWithEth = typeof window !== 'undefined' ? window as typeof window & { ethereum?: unknown } : undefined;
+    if (windowWithEth && windowWithEth.ethereum) {
+      // Dynamic import to avoid require
+      return import('ethers').then(({ ethers }) => new ethers.BrowserProvider(windowWithEth.ethereum as never));
     }
 
-    return (this.sdk as any).provider;
+    return (this.sdk as typeof this.sdk & { provider?: unknown }).provider;
   }
 
   async getSigner() {
     if (!this.sdk) throw new Error('Nexus SDK not initialized');
 
     // Use window.ethereum if available (browser wallet)
-    if (typeof window !== 'undefined' && (window as any).ethereum) {
-      const { ethers } = require('ethers');
-      const provider = new ethers.BrowserProvider((window as any).ethereum);
+    const windowWithEth = typeof window !== 'undefined' ? window as typeof window & { ethereum?: unknown } : undefined;
+    if (windowWithEth && windowWithEth.ethereum) {
+      const { ethers } = await import('ethers');
+      const provider = new ethers.BrowserProvider(windowWithEth.ethereum as never);
       const signer = await provider.getSigner();
       return signer;
     }
 
     // Fallback to SDK provider
-    const provider = (this.sdk as any).provider;
-    if (!provider) return null;
+    const sdkProvider = (this.sdk as typeof this.sdk & { provider?: { getSigner?: () => Promise<unknown> } }).provider;
+    if (!sdkProvider) return null;
 
-    const signer = await provider.getSigner();
-    return signer;
+    if (sdkProvider.getSigner) {
+      const signer = await sdkProvider.getSigner();
+      return signer;
+    }
+    return null;
   }
 
   async testSupportedRoutes(): Promise<{
@@ -375,14 +390,16 @@ class NexusService {
               amount: 1,
               chainId: toChain.id,
               sourceChainId: fromChain.id,
-            } as any);
+            } as Parameters<typeof this.sdk.simulateBridge>[0] & { sourceChainId?: number });
 
-            if (result && (result as any).success !== false) {
+            const resultExt = result as typeof result & { success?: boolean; error?: string };
+
+            if (result && resultExt.success !== false) {
               testRoute.success = true;
               workingRoutes.push({ from: fromChain.id, to: toChain.id, token });
               console.log(`[NexusService] ✅ ROUTE WORKS: ${fromChain.name} → ${toChain.name} (${token})`);
             } else {
-              testRoute.error = (result as any).error || 'Unknown error';
+              testRoute.error = resultExt.error || 'Unknown error';
               console.log(`[NexusService] ❌ Route failed: ${testRoute.error}`);
             }
           } catch (error) {

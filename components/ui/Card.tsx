@@ -12,7 +12,6 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     {
       variant = 'default',
       padding = 'md',
-      border = true,
       children,
       className = '',
       ...props
@@ -35,8 +34,6 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       md: 'p-4',
       lg: 'p-6',
     };
-
-    const borderClass = border ? variantClasses[variant] : `${baseClasses} bg-bg-elevated`;
 
     const cardClasses = `${baseClasses} ${variantClasses[variant]} ${paddingClasses[padding]} ${className}`;
 

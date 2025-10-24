@@ -27,20 +27,16 @@ export default function NexusBridgeTest() {
       setLastResult(result);
 
       if (result.success) {
-        // eslint-disable-next-line no-console
         console.log('✅ Bridge successful!');
         if (result.explorerUrl) {
-          // eslint-disable-next-line no-console
           console.log('View transaction:', result.explorerUrl);
         }
       } else {
-        // eslint-disable-next-line no-console
         console.error('❌ Bridge failed:', result.error);
       }
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       setErrorMsg(msg);
-      // eslint-disable-next-line no-console
       console.error('Bridge error:', error);
     } finally {
       setIsRunning(false);

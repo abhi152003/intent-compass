@@ -48,17 +48,17 @@ export function UnifiedBalancePanel() {
       console.log('[UnifiedBalancePanel] Balances:', unifiedBalances);
 
       // Transform to our format
-      const formattedBalances: TokenBalance[] = unifiedBalances.map((asset: any) => ({
+      const formattedBalances: TokenBalance[] = unifiedBalances.map((asset) => ({
         symbol: asset.symbol,
         balance: asset.balance || '0',
-        balanceInFiat: asset.balanceInFiat,
-        breakdown: asset.breakdown?.map((chain: any) => ({
+        balanceInFiat: typeof asset.balanceInFiat === 'number' ? asset.balanceInFiat.toString() : asset.balanceInFiat,
+        breakdown: asset.breakdown?.map((chain) => ({
           chain: {
             id: chain.chain.id,
             name: CHAIN_NAMES[chain.chain.id as keyof typeof CHAIN_NAMES] || chain.chain.name || `Chain ${chain.chain.id}`,
           },
           balance: chain.balance || '0',
-          balanceInFiat: chain.balanceInFiat,
+          balanceInFiat: typeof chain.balanceInFiat === 'number' ? chain.balanceInFiat.toString() : chain.balanceInFiat,
         })),
       }));
 
@@ -75,6 +75,7 @@ export function UnifiedBalancePanel() {
     if (isInitialized) {
       fetchBalances();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInitialized]);
 
   if (!isInitialized && !isInitializing) {

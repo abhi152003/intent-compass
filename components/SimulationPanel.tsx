@@ -57,9 +57,9 @@ export function SimulationPanel() {
             padding="md"
             className="bg-bg-secondary/50 hover:bg-bg-secondary transition-all duration-base"
           >
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3 flex-1">
-                <div className="text-sm text-text-muted font-mono">{String(index + 1).padStart(2, '0')}</div>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <div className="text-sm text-text-muted font-mono flex-shrink-0">{String(index + 1).padStart(2, '0')}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     {result.success ? (
@@ -72,7 +72,7 @@ export function SimulationPanel() {
                     </span>
                   </div>
                   {result.route && Array.isArray(result.route) && result.route.length > 0 && (
-                    <div className="text-xs text-text-muted mt-1 truncate">
+                    <div className="text-xs text-text-muted mt-1 break-words">
                       {result.route.join(' → ')}
                     </div>
                   )}
@@ -81,8 +81,10 @@ export function SimulationPanel() {
                   )}
                 </div>
               </div>
-              <div className="text-right flex-shrink-0 ml-4">
-                <div className="text-sm font-semibold text-text-primary">${result.estimatedCost}</div>
+              <div className="text-right flex-shrink-0">
+                <div className="text-sm font-semibold text-text-primary break-words">
+                  ${result.estimatedCost}
+                </div>
                 <div className="text-xs text-text-muted">{result.estimatedTime}s</div>
               </div>
             </div>

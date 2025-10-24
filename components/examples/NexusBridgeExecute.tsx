@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useNexus } from '@/contexts/NexusProvider';
-import { SUPPORTED_CHAINS } from '@/constants/chains';
 import { Send, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export function NexusBridgeExecute() {
@@ -188,7 +187,7 @@ export function NexusBridgeExecute() {
     setLoading(true);
     try {
       console.log('🔍 Checking supported routes...');
-      const routes = await (nexusService as any).getSupportedRoutes();
+      const routes = await (nexusService as typeof nexusService & { getSupportedRoutes: () => Promise<unknown> }).getSupportedRoutes();
       console.log('📋 Supported routes:', routes);
       setResult({ routes, message: 'Check console (F12) for full details' });
       setError(null);
@@ -212,7 +211,7 @@ export function NexusBridgeExecute() {
       console.log('🧪 Testing all supported routes...');
       console.log('This may take 30-60 seconds. Check console for progress.');
       
-      const discoveryResult = await (nexusService as any).testSupportedRoutes();
+      const discoveryResult = await (nexusService as typeof nexusService & { testSupportedRoutes: () => Promise<{ workingRoutes: Array<{ from: number; to: number; token: string }> }> }).testSupportedRoutes();
       
       console.log('✅ Route discovery complete!');
       console.log('Working routes:', discoveryResult.workingRoutes);
@@ -222,7 +221,7 @@ export function NexusBridgeExecute() {
 Found ${discoveryResult.workingRoutes.length} working routes!
 
 Working Routes:
-${discoveryResult.workingRoutes.map((r: any) => `  • Sepolia/Base/Arbitrum(${r.from}) → ${r.to}, ${r.token}`).join('\n')}
+${discoveryResult.workingRoutes.map((r: { from: number; to: number; token: string }) => `  • Sepolia/Base/Arbitrum(${r.from}) → ${r.to}, ${r.token}`).join('\n')}
 
 ⚠️ Sepolia → Base (84532) is NOT supported.
 Try using a working route above instead.
@@ -264,7 +263,7 @@ See console (F12) for full test details.
         {!isInitialized && !isInitializing && address && (
           <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
             <p className="text-amber-400 text-sm">
-              💡 <strong>Important:</strong> Make sure you're connected to <strong>Ethereum Sepolia</strong> in MetaMask!<br/>
+              💡 <strong>Important:</strong> Make sure you&apos;re connected to <strong>Ethereum Sepolia</strong> in MetaMask!<br/>
               The destination is set to Base Sepolia. Nexus SDK may not support bridging to Ethereum Sepolia directly.
             </p>
           </div>
@@ -315,7 +314,7 @@ See console (F12) for full test details.
             >
               {Object.entries(chainIdMapping).map(([key, chainId]) => (
                 <option key={key} value={chainId}>
-                  {SUPPORTED_CHAINS[key]?.name || key} (Chain ID: {chainId})
+                  {key.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} (Chain ID: {chainId})
                 </option>
               ))}
             </select>

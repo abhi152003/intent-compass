@@ -1,7 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import Card from './Card';
-import Button from './Button';
 
 interface ModalProps {
   isOpen: boolean;

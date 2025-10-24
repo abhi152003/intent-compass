@@ -235,7 +235,8 @@ export class SimulationService {
           toChainId: data.toChain,
         });
 
-        const fees = (simulation as any).intent?.fees || {};
+        const simulationWithFees = simulation as typeof simulation & { intent?: { fees?: { total?: string; gasSupplied?: string } } };
+        const fees = simulationWithFees.intent?.fees || {};
         const totalFee = fees.total || fees.gasSupplied || '0';
         const estimatedCost = typeof totalFee === 'string'
           ? totalFee
@@ -286,7 +287,8 @@ export class SimulationService {
           recipient: data.recipient,
         });
 
-        const fees = (simulation as any).intent?.fees || {};
+        const simulationWithFees = simulation as typeof simulation & { intent?: { fees?: { total?: string; gasSupplied?: string } } };
+        const fees = simulationWithFees.intent?.fees || {};
         const totalFee = fees.total || fees.gasSupplied || '0';
         const estimatedCost = typeof totalFee === 'string'
           ? totalFee
@@ -416,9 +418,7 @@ export class SimulationService {
           functionName: 'deposit',
           buildFunctionParams: (
             _token: string,
-            amount: string,
-            _chainId: number,
-            _userAddress: string
+            amount: string
           ) => {
             // Convert amount to proper units (6 decimals for USDC)
             const amountWei = ethers.parseUnits(amount, 6);
@@ -435,7 +435,7 @@ export class SimulationService {
 
       console.log('[SimulationService] BridgeAndExecute simulation params:', params);
 
-      const result = await this.nexusService.simulateBridgeAndExecute(params as any);
+      const result = await this.nexusService.simulateBridgeAndExecute(params as Parameters<NexusService['simulateBridgeAndExecute']>[0]);
 
       console.log('[SimulationService] BridgeAndExecute simulation result:', result);
 
@@ -443,20 +443,26 @@ export class SimulationService {
       let totalCost = '5.0';
 
       // Handle different result structures
-      if (typeof (result as any).totalEstimatedCost === 'object' && (result as any).totalEstimatedCost?.total) {
+      const resultWithCost = result as typeof result & {
+        totalEstimatedCost?: string | number | { total: string; breakdown?: unknown };
+        metadata?: { totalEstimatedCost?: number };
+        steps?: unknown[];
+      };
+
+      if (typeof resultWithCost.totalEstimatedCost === 'object' && resultWithCost.totalEstimatedCost?.total) {
         // SDK returns {total: string, breakdown: {...}}
-        totalCost = (result as any).totalEstimatedCost.total;
+        totalCost = resultWithCost.totalEstimatedCost.total;
         console.log('[SimulationService] Extracted total cost:', totalCost);
-        console.log('[SimulationService] Cost breakdown:', (result as any).totalEstimatedCost.breakdown);
-      } else if (typeof (result as any).totalEstimatedCost === 'string') {
-        totalCost = (result as any).totalEstimatedCost;
-      } else if (typeof (result as any).totalEstimatedCost === 'number') {
-        totalCost = (result as any).totalEstimatedCost.toString();
-      } else if ((result as any).metadata?.totalEstimatedCost) {
-        totalCost = (result as any).metadata.totalEstimatedCost.toString();
-      } else if ((result as any).steps) {
+        console.log('[SimulationService] Cost breakdown:', resultWithCost.totalEstimatedCost.breakdown);
+      } else if (typeof resultWithCost.totalEstimatedCost === 'string') {
+        totalCost = resultWithCost.totalEstimatedCost;
+      } else if (typeof resultWithCost.totalEstimatedCost === 'number') {
+        totalCost = resultWithCost.totalEstimatedCost.toString();
+      } else if (resultWithCost.metadata?.totalEstimatedCost) {
+        totalCost = resultWithCost.metadata.totalEstimatedCost.toString();
+      } else if (resultWithCost.steps) {
         // Calculate from steps if available
-        const steps = (result as any).steps;
+        const steps = resultWithCost.steps;
         console.log('[SimulationService] Calculating cost from steps:', steps);
       }
 

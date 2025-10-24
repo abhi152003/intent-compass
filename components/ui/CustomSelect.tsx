@@ -81,12 +81,11 @@ const CustomSelect = React.forwardRef<HTMLSelectElement, CustomSelectProps>(
       // Trigger onChange event
       if (onChange && hiddenSelectRef.current) {
         hiddenSelectRef.current.value = String(optionValue);
-        const event = new Event('change', { bubbles: true });
-        Object.defineProperty(event, 'target', {
-          writable: false,
-          value: hiddenSelectRef.current
-        });
-        onChange(event as any);
+        const syntheticEvent = {
+          target: hiddenSelectRef.current,
+          currentTarget: hiddenSelectRef.current,
+        } as React.ChangeEvent<HTMLSelectElement>;
+        onChange(syntheticEvent);
       }
     };
 

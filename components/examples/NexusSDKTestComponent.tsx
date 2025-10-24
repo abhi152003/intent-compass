@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNexus } from '@/contexts/NexusProvider';
 import { useAccount } from 'wagmi';
 import { parseUnits } from 'viem';
@@ -50,12 +50,11 @@ const TOKEN_CONTRACT_ADDRESSES = {
 } as const;
 
 type SUPPORTED_TOKENS = keyof typeof TOKEN_METADATA;
-type SUPPORTED_CHAINS_IDS = keyof typeof TOKEN_CONTRACT_ADDRESSES.USDC;
 
 interface TestResult {
   operation: string;
   success: boolean;
-  data?: any;
+  data?: unknown;
   error?: string;
   timestamp: number;
 }
@@ -65,10 +64,10 @@ export function NexusSDKTestComponent() {
   const { address } = useAccount();
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunningTests, setIsRunningTests] = useState(false);
-  const [balances, setBalances] = useState<any[]>([]);
+  const [balances, setBalances] = useState<unknown[]>([]);
 
   // Add test result helper
-  const addTestResult = (operation: string, success: boolean, data?: any, error?: string) => {
+  const addTestResult = (operation: string, success: boolean, data?: unknown, error?: string) => {
     const result: TestResult = {
       operation,
       success,
@@ -152,33 +151,21 @@ export function NexusSDKTestComponent() {
 
     try {
       console.log('🧪 Testing execute...');
-      
-      const buildFunctionParams = (
-        token: SUPPORTED_TOKENS,
-        amount: string,
-        chainId: SUPPORTED_CHAINS_IDS,
-        user: `0x${string}`,
-      ) => {
-        const decimals = TOKEN_METADATA[token].decimals;
-        const amountWei = parseUnits(amount, decimals);
-        const tokenAddr = TOKEN_CONTRACT_ADDRESSES[token][chainId];
-        return { functionParams: [tokenAddr, amountWei, user, 0] };
-      };
 
       const executeResult = await nexusService.execute({
+        toChainId: 84532, // Base Sepolia
         contractAddress: MOCK_CONTRACT_ADDRESS,
         contractAbi: MOCK_CONTRACT_ABI,
         functionName: MOCK_FUNCTION_NAME,
         buildFunctionParams: (
-          token: SUPPORTED_TOKENS,
-          amount: string,
-          chainId: SUPPORTED_CHAINS_IDS,
-          user: `0x${string}`,
+          token: string,
+          amount: string
         ) => {
-          const decimals = TOKEN_METADATA[token].decimals;
+          const tokenKey = token as SUPPORTED_TOKENS;
+          const decimals = TOKEN_METADATA[tokenKey].decimals;
           const amountWei = parseUnits(amount, decimals);
-          const tokenAddr = TOKEN_CONTRACT_ADDRESSES[token][chainId];
-          return { functionParams: [tokenAddr, amountWei, user, 0] };
+          const tokenAddr = TOKEN_CONTRACT_ADDRESSES[tokenKey][84532]; // Use Base Sepolia
+          return { functionParams: [tokenAddr, amountWei, address || '0x0000000000000000000000000000000000000000', 0] };
         },
         value: '0', // No ETH value for this test
         tokenApproval: {
@@ -398,7 +385,7 @@ export function NexusSDKTestComponent() {
         <div className="space-y-2 max-h-96 overflow-y-auto">
           {testResults.length === 0 ? (
             <div className="text-gray-400 text-center py-4">
-              No test results yet. Click "Run All Tests" or individual test buttons above.
+              No test results yet. Click &quot;Run All Tests&quot; or individual test buttons above.
             </div>
           ) : (
             testResults.map((result, index) => (
@@ -423,13 +410,13 @@ export function NexusSDKTestComponent() {
                     Error: {result.error}
                   </div>
                 )}
-                {result.data && (
+                {result.data !== undefined && (
                   <details className="text-xs">
                     <summary className="cursor-pointer text-gray-300 hover:text-white">
                       View Data
                     </summary>
                     <pre className="mt-2 text-gray-400 whitespace-pre-wrap overflow-x-auto">
-                      {JSON.stringify(result.data, null, 2)}
+                      {typeof result.data === 'string' ? result.data : JSON.stringify(result.data, null, 2)}
                     </pre>
                   </details>
                 )}
@@ -451,7 +438,7 @@ export function NexusSDKTestComponent() {
           <li>• <strong>Execute (Live):</strong> Real contract interaction - requires wallet approval</li>
         </ul>
         <p className="text-blue-200 text-sm mt-2">
-          <strong>Note:</strong> Live tests will prompt for wallet signatures and may fail if you don't have sufficient tokens or gas.
+          <strong>Note:</strong> Live tests will prompt for wallet signatures and may fail if you don&apos;t have sufficient tokens or gas.
         </p>
       </div>
     </div>

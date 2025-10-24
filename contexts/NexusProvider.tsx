@@ -29,29 +29,45 @@ interface NexusSession {
   initialized: boolean;
 }
 
-function createProvider(walletClient: any) {
-  const eventListeners = new Map<string | symbol, Set<(...args: any[]) => void>>();
+interface WalletClient {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+  account?: { address: string };
+  chain?: { id: number };
+}
 
-  const provider: any = {
+type EventListener = (...args: unknown[]) => void;
+
+interface Provider {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+  on: (eventName: string | symbol, listener: EventListener) => Provider;
+  removeListener: (eventName: string | symbol, listener: EventListener) => Provider;
+  account?: { address: string };
+  chain?: { id: number };
+}
+
+function createProvider(walletClient: WalletClient): Provider {
+  const eventListeners = new Map<string | symbol, Set<EventListener>>();
+
+  const provider: Provider = {
     request: async ({ method, params }: { method: string; params?: unknown[] }) => {
       return await walletClient.request({
         method: method as never,
         params: params as never
       });
     },
-    on(eventName: string | symbol, listener: (...args: any[]) => void) {
+    on(eventName: string | symbol, listener: EventListener) {
       if (!eventListeners.has(eventName)) {
         eventListeners.set(eventName, new Set());
       }
       eventListeners.get(eventName)!.add(listener);
-      return this;
+      return provider;
     },
-    removeListener(eventName: string | symbol, listener: (...args: any[]) => void) {
+    removeListener(eventName: string | symbol, listener: EventListener) {
       const listeners = eventListeners.get(eventName);
       if (listeners) {
         listeners.delete(listener);
       }
-      return this;
+      return provider;
     },
     get account() {
       return walletClient.account;
@@ -105,7 +121,7 @@ export function NexusProvider({ children }: { children: ReactNode }) {
     try {
       console.log('[NexusProvider] 🔄 Initializing Nexus SDK (will request signature)...');
 
-      const provider = createProvider(walletClient);
+      const provider = createProvider(walletClient as WalletClient);
       await nexusService.initialize(provider);
 
       const session: NexusSession = {
@@ -113,7 +129,9 @@ export function NexusProvider({ children }: { children: ReactNode }) {
         timestamp: Date.now(),
         initialized: true,
       };
-      localStorage.setItem(NEXUS_SESSION_KEY, JSON.stringify(session));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(NEXUS_SESSION_KEY, JSON.stringify(session));
+      }
 
       setIsInitialized(true);
       initializationAttempted.current = address;
@@ -149,6 +167,10 @@ export function NexusProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const storedSession = localStorage.getItem(NEXUS_SESSION_KEY);
     if (storedSession) {
       try {
@@ -177,7 +199,7 @@ export function NexusProvider({ children }: { children: ReactNode }) {
   }, [walletClient, address]);
 
   useEffect(() => {
-    if (!address) {
+    if (!address && typeof window !== 'undefined') {
       localStorage.removeItem(NEXUS_SESSION_KEY);
       initializationAttempted.current = null;
       setIsInitialized(false);

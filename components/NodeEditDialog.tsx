@@ -10,13 +10,13 @@ interface NodeEditDialogProps {
   node: FlowNode | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (nodeId: string, updates: Record<string, any>) => void;
+  onSave: (nodeId: string, updates: Record<string, unknown>) => void;
   edges: FlowEdge[];
   nodes: FlowNode[];
 }
 
 export function NodeEditDialog({ node, isOpen, onClose, onSave, edges, nodes }: NodeEditDialogProps) {
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
     if (node) {
@@ -47,7 +47,7 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave, edges, nodes }: 
           <>
             <Select
               label="Chain"
-              value={formData.chain || 84532}
+              value={(formData.chain as number) || 84532}
               onChange={(e) => setFormData({ ...formData, chain: Number(e.target.value) })}
             >
               {Object.entries(CHAINS).map(([id, name]) => (
@@ -58,7 +58,7 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave, edges, nodes }: 
             </Select>
             <Select
               label="Token"
-              value={formData.token || 'USDC'}
+              value={(formData.token as string) || 'USDC'}
               onChange={(e) => setFormData({ ...formData, token: e.target.value })}
             >
               <option value="ETH">ETH</option>
@@ -74,7 +74,7 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave, edges, nodes }: 
           <>
             <Select
               label="To Chain"
-              value={formData.toChain || 11155111}
+              value={(formData.toChain as number) || 11155111}
               onChange={(e) => setFormData({ ...formData, toChain: Number(e.target.value) })}
             >
               {Object.entries(CHAINS).map(([id, name]) => (
@@ -87,7 +87,7 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave, edges, nodes }: 
               <Input
                 type="number"
                 label="Amount"
-                value={formData.amount || '100'}
+                value={(formData.amount as string) || '100'}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                 step="0.01"
                 min="0"
@@ -95,7 +95,7 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave, edges, nodes }: 
             ) : (
               <div className="p-3 bg-accent-blue/10 border border-accent-blue/30 rounded-lg">
                 <p className="text-sm text-accent-blue">
-                  <strong>BridgeAndExecute Mode:</strong> Amount will be automatically calculated based on the Execute node's amount and your existing balance on the target chain.
+                  <strong>BridgeAndExecute Mode:</strong> Amount will be automatically calculated based on the Execute node&apos;s amount and your existing balance on the target chain.
                 </p>
               </div>
             )}
@@ -108,7 +108,7 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave, edges, nodes }: 
             <Input
               type="number"
               label="Amount"
-              value={formData.amount || '100'}
+              value={(formData.amount as string) || '100'}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
               step="0.01"
               min="0"
@@ -116,7 +116,7 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave, edges, nodes }: 
             <Input
               type="text"
               label="Recipient Address"
-              value={formData.recipient || '0x0000000000000000000000000000000000000000'}
+              value={(formData.recipient as string) || '0x0000000000000000000000000000000000000000'}
               onChange={(e) => setFormData({ ...formData, recipient: e.target.value })}
               className="font-mono text-sm"
               placeholder="0x..."
@@ -129,7 +129,7 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave, edges, nodes }: 
           <>
             <Select
               label="Action"
-              value={formData.action || 'stake'}
+              value={(formData.action as string) || 'stake'}
               onChange={(e) => setFormData({ ...formData, action: e.target.value })}
             >
               <option value="stake">Stake</option>
@@ -139,7 +139,7 @@ export function NodeEditDialog({ node, isOpen, onClose, onSave, edges, nodes }: 
             <Input
               type="number"
               label="Amount"
-              value={formData.amount || '100'}
+              value={(formData.amount as string) || '100'}
               onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
               step="0.01"
               min="0"

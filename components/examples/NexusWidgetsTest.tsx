@@ -17,7 +17,7 @@ export default function NexusWidgetsTest() {
   useEffect(() => {
     const checkProvider = () => {
       if (typeof window !== 'undefined') {
-        const ethereum = (window as any).ethereum;
+        const ethereum = (window as typeof window & { ethereum?: { isConnected?: () => boolean; selectedAddress?: string; chainId?: string } }).ethereum;
         setProviderStatus({
           exists: !!ethereum,
           isConnected: ethereum?.isConnected ? ethereum.isConnected() : null,
@@ -37,10 +37,11 @@ export default function NexusWidgetsTest() {
     console.log('=== NEXUS WIDGET DEBUG ===');
     console.log('Wagmi Connected:', isConnected);
     console.log('Wagmi Address:', address);
-    console.log('window.ethereum exists:', !!(window as any).ethereum);
-    console.log('window.ethereum:', (window as any).ethereum);
-    if ((window as any).ethereum) {
-      const eth = (window as any).ethereum;
+    const windowWithEth = window as typeof window & { ethereum?: unknown };
+    console.log('window.ethereum exists:', !!windowWithEth.ethereum);
+    console.log('window.ethereum:', windowWithEth.ethereum);
+    if (windowWithEth.ethereum) {
+      const eth = windowWithEth.ethereum as { request?: unknown; on?: unknown; removeListener?: unknown; isConnected?: () => boolean; enable?: unknown; selectedAddress?: string; chainId?: string; isMetaMask?: boolean };
       console.log('Provider methods:', {
         request: typeof eth.request,
         on: typeof eth.on,

@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   description: "Design, simulate, and execute cross-chain DeFi flows with a visual canvas interface.",
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function RootLayout({
   children,
 }: Readonly<{
