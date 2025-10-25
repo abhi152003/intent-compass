@@ -2,103 +2,55 @@
 
 > Design, simulate, and execute multi-step cross-chain DeFi flows with an intuitive visual canvas.
 
-## 🎯 The Problem
+## Overview
 
-Cross-chain DeFi operations are complex and opaque. Users don't know:
-- How much a multi-step operation will cost
-- Which route will be fastest/cheapest
-- What will happen before they execute
+IntentCompass is a visual interface for designing and executing complex cross-chain DeFi operations. Built with Avail Nexus SDK, it enables users to compose multi-step flows, preview costs and timing, and execute everything atomically in a single transaction.
 
-Traditional interfaces treat each step separately, requiring multiple approvals and manual coordination.
+## Key Features
 
-## 💡 The Solution
-
-**IntentCompass** is a visual canvas where users can:
-
-1. **Design** complex cross-chain flows by dragging and connecting nodes
-2. **Simulate** the entire flow to see costs, timing, and routes
-3. **Execute** with one click using Avail Nexus SDK's atomic operations
-
-### Example Flow
-```
-[Start: Base]
-  100 USDC
-     │
-     ▼
-[Bridge]
-  Base → Optimism
-  Cost: $2.50
-     │
-     ▼
-[Execute: Aave Supply]
-  Supply to Aave
-  Cost: $0.80
-     │
-     ▼
-[End: Optimism]
-  Earning 8% APY
-
-Total: $3.30, 35 seconds
-```
-
-## ✨ Key Features
-
-### 1. 🎨 Visual Canvas Interface
+### Visual Canvas Interface
 - Drag-and-drop node-based design powered by React Flow
 - Connect operations visually to create multi-step flows
-- Real-time validation and suggestions
+- Real-time validation and flow composition
 
-### 2. 🔍 Pre-Execution Simulation
-- See exact costs before committing
-- Compare different routes and strategies
-- Understand timing and success rates
+### Pre-Execution Simulation
+- Preview exact costs before committing transactions
+- Understand timing and execution flow
+- Validate flow before execution
 
-### 3. ⚡ Atomic Execution
-- Execute entire flow in one transaction
-- Powered by Avail Nexus SDK's `bridgeAndExecute()`
-- No manual coordination between steps
+### Atomic Execution
+- Execute entire flows in coordinated transactions
+- Powered by Avail Nexus SDK's advanced features
+- Single approval for multi-step operations
 
-### 4. 💾 Template System
-- Save successful flows as templates
-- Load pre-built strategies (stake on Aave, etc.)
-- Share with the community
-
-### 5. 📊 Rich Node Types
+### Rich Node Types
+- **Start Node**: Define initial chain and token
 - **Bridge Node**: Move tokens between chains
-- **Transfer Node**: Send to any address
-- **Execute Node**: Interact with DeFi protocols (Stake, Lend, Swap)
+- **Transfer Node**: Send tokens to any address
+- **Execute Node**: Interact with smart contracts
 
-## 🏗️ Architecture
+## Technology Stack
 
-### Technology Stack
 - **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
 - **Canvas**: React Flow (@xyflow/react)
 - **Web3**: wagmi, viem, RainbowKit
-- **Cross-Chain**: Avail Nexus SDK
-- **State**: Zustand
+- **Cross-Chain**: Avail Nexus SDK & Widgets
+- **State Management**: Zustand
 
-### How It Works
-
-1. **User Designs Flow**: Drag nodes onto canvas, configure parameters, connect with edges
-2. **Simulation**: IntentCompass calls Nexus SDK simulation APIs to get cost/time estimates
-3. **Preview**: User sees detailed breakdown before execution
-4. **Execution**: Flow converted to Nexus SDK calls (`bridge()`, `transfer()`, `bridgeAndExecute()`)
-5. **Tracking**: Real-time progress updates as each step executes
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 18 or higher
 - Modern web browser
-- MetaMask or compatible wallet
-- Testnet tokens (see Faucets section)
+- MetaMask or compatible Web3 wallet
+- Testnet tokens for testing
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/intent-compass
-cd intent-compass
+git clone <repository-url>
+cd unispend
 
 # Install dependencies
 npm install
@@ -106,178 +58,142 @@ npm install
 # Run development server
 npm run dev
 
-# Open in browser
-# Navigate to http://localhost:3000
+# Open http://localhost:3000 in your browser
 ```
 
 ### Get Testnet Tokens
 
 - **Sepolia ETH**: https://sepoliafaucet.com/
-- **Base Sepolia ETH**: https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet
-- **Avail Tokens**: https://faucet.avail.tools/
+- **Base Sepolia**: https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet
+- **Arbitrum Sepolia**: https://faucet.quicknode.com/arbitrum/sepolia
 
-## 📖 Usage
+## Usage
 
 ### 1. Connect Wallet
-Click "Connect Wallet" and authorize your wallet (MetaMask, WalletConnect, etc.)
+Click "Connect Wallet" in the header and authorize your Web3 wallet.
 
 ### 2. Design Your Flow
-- Drag nodes from the toolbar to the canvas
-- Configure each node (chain, amount, parameters)
-- Connect nodes with edges to create a flow
+- Click on node types in the toolbar to add them to the canvas
+- Double-click nodes to configure parameters (chain, amount, etc.)
+- Drag from node handles to create connections between nodes
 
 ### 3. Simulate
-- Click "Simulate" to preview the flow
-- See cost breakdown, timing, and routes
-- Adjust if needed
+- Click "Simulate Flow" to preview the execution
+- Review estimated costs and timing
+- Verify the flow structure
 
 ### 4. Execute
-- Click "Execute" to run the entire flow
-- Confirm in your wallet
-- Watch real-time progress
+- Click "Execute Flow" to run the operation
+- Confirm transactions in your wallet
+- Monitor execution progress in real-time
 
-### 5. Save as Template
-- Click "Save Template" to reuse successful flows
-- Name it and add description
-- Load anytime from Template Library
+## Avail Nexus Integration
 
-## 🎯 Avail Nexus Integration
-
-IntentCompass showcases advanced Nexus SDK features:
+IntentCompass leverages advanced Avail Nexus SDK features:
 
 ### Bridge Operations
 ```typescript
-const result = await sdk.bridge({
+const result = await nexusService.bridge({
   token: 'USDC',
-  amount: 100,
-  chainId: 84532, // Base Sepolia
+  amount: '100',
+  toChainId: 84532, // Base Sepolia
 });
 ```
 
 ### Bridge & Execute (Atomic Composition)
 ```typescript
-const result = await sdk.bridgeAndExecute({
-  toChainId: 10, // Optimism
-  contractAddress: AAVE_POOL_ADDRESS,
-  contractAbi: AAVE_POOL_ABI,
-  functionName: 'supply',
-  buildFunctionParams: (token, amount, chainId, userAddress) => {
-    return {
-      functionParams: [
-        tokenAddress,
-        parseUnits(amount, 6),
-        userAddress,
-        0
-      ]
-    };
+const result = await nexusService.bridgeAndExecute({
+  toChainId: 84532,
+  bridge: {
+    token: 'USDC',
+    amount: '100',
+    toChainId: 84532,
+  },
+  execute: {
+    contractAddress: CONTRACT_ADDRESS,
+    contractAbi: CONTRACT_ABI,
+    functionName: 'deposit',
+    buildFunctionParams: (token, amount) => ({
+      functionParams: [tokenAddress, parseUnits(amount, 6), userAddress]
+    })
   }
 });
 ```
 
-### Intent Preview Hook
-```typescript
-sdk.setOnIntentHook(({ intent, allow, deny, refresh }) => {
-  // Show user preview with costs and details
-  showPreview(intent);
-
-  // User can approve or deny
-  if (userApproved) allow();
-  else deny();
-});
-```
-
-## 📁 Project Structure
+## Project Structure
 
 ```
-intent-compass/
+unispend/
 ├── app/
-│   ├── layout.tsx              # Root layout
-│   └── page.tsx                # Main canvas page
+│   ├── layout.tsx              # Root layout with providers
+│   ├── page.tsx                # Main application page
+│   └── globals.css             # Global styles
 ├── components/
-│   ├── examples/               # Example/demo components
-│   ├── nodes/                  # Node type components
+│   ├── examples/               # Example components
+│   ├── nodes/                  # Flow node components
 │   │   ├── StartNode.tsx
 │   │   ├── BridgeNode.tsx
 │   │   ├── TransferNode.tsx
-│   │   ├── ExecuteNode.tsx
-│   │   └── EndNode.tsx
+│   │   └── ExecuteNode.tsx
+│   ├── ui/                     # UI components
 │   ├── IntentCanvas.tsx        # Main React Flow canvas
-│   ├── Toolbar.tsx             # Node dragging toolbar
-│   ├── SimulationPanel.tsx     # Simulation results display
-│   ├── ExecutionPanel.tsx      # Execution progress tracker
-│   ├── TemplateLibrary.tsx     # Template browser
-│   └── Header.tsx              # App header
+│   ├── ExecutionPanel.tsx      # Execution tracking
+│   ├── SimulationPanel.tsx     # Simulation results
+│   └── UnifiedBalancePanel.tsx # Balance display
 ├── contexts/
-│   ├── Web3Provider.tsx        # Web3 context
+│   ├── Web3Provider.tsx        # Web3 wallet context
 │   └── NexusProvider.tsx       # Nexus SDK context
 ├── lib/
 │   ├── services/
-│   │   ├── nexusSDK.ts         # Core Nexus SDK integration
-│   │   ├── simulation.ts       # Simulation engine
-│   │   ├── execution.ts        # Execution engine
-│   │   └── templates.ts        # Template storage/retrieval
-│   └── wagmi.ts                # Wagmi configuration
+│   │   ├── nexusSDK.ts         # Nexus SDK service
+│   │   ├── simulation.ts       # Flow simulation
+│   │   └── execution.ts        # Flow execution
+│   └── stores/
+│       └── flowStore.ts        # Zustand flow state
 └── types/
-    └── flow.ts                 # Flow/node type definitions
+    └── flow.ts                 # Type definitions
 ```
 
-## 🧪 Testing
+## Development
 
-### Manual Testing Checklist
-- [ ] Connect wallet successfully
-- [ ] Drag nodes onto canvas
-- [ ] Configure node parameters
-- [ ] Connect nodes with edges
-- [ ] Simulate flow and see costs
-- [ ] Execute flow end-to-end
-- [ ] Save and load templates
-
-## 🏆 Hackathon Bounties
-
-### Avail Nexus General Track ($4,500)
-- ✅ Comprehensive Nexus SDK integration
-- ✅ Advanced features: Bridge & Execute, Intent Hooks
-- ✅ Visual demonstration of multi-step compositions
-- ✅ Unique concept: Visual intent design
-- ✅ Production-ready code
-
-## 🔧 Development
-
+### Type Checking
 ```bash
-# Type checking
 npx tsc --noEmit
+```
 
-# Linting
+### Linting
+```bash
 npm run lint
+```
 
-# Build for production
+### Build for Production
+```bash
 npm run build
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
-**Issue**: "Failed to connect wallet"
-- **Solution**: Ensure you have a compatible wallet installed (MetaMask, etc.)
+### Wallet Connection Issues
+- Ensure MetaMask or compatible wallet is installed
+- Check that you're on a supported network
+- Try refreshing the page
 
-**Issue**: "Simulation failed"
-- **Solution**: Check that you have sufficient testnet tokens and the nodes are properly configured
+### Simulation Failures
+- Verify you have sufficient testnet tokens
+- Check that node configurations are correct
+- Ensure chains and tokens are compatible
 
-## 📝 License
+### Execution Failures
+- Confirm wallet has enough gas
+- Check that all previous steps succeeded
+- Review transaction details in wallet
 
-MIT License - see LICENSE file for details
+## License
 
-## 🙏 Acknowledgments
+MIT License - See LICENSE file for details
 
-- **Avail** team for the powerful Nexus SDK
-- **React Flow** for the excellent canvas library
-- **RainbowKit** for wallet connection UX
+## Acknowledgments
 
-## 🔗 Links
-
-- **Demo**: [Coming soon]
-- **GitHub**: https://github.com/yourusername/intent-compass
-- **Avail Nexus Docs**: https://docs.availproject.org/
-
----
-
-**Built with ❤️ for the future of cross-chain DeFi**
+- Avail team for the Nexus SDK and cross-chain infrastructure
+- React Flow team for the excellent canvas library
+- RainbowKit team for wallet connection components
